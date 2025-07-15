@@ -1,0 +1,676 @@
+<!-- app/templates/crags.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --success-color: #22c55e;
+            --warning-color: #eab308;
+            --danger-color: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .search-section {
+            background: var(--card-bg);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .search-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .search-row {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 200px;
+            position: relative;
+        }
+
+        .search-input input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            padding-left: 2.5rem;
+            border: 2px solid var(--border-color);
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            background-color: white;
+            transition: all 0.2s;
+        }
+
+        .search-input input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .search-input::before {
+            content: "🔍";
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1rem;
+            color: var(--text-secondary);
+            pointer-events: none;
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            min-width: 200px;
+            flex: 1;
+        }
+
+        .filter-group label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+
+        .filter-group select {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            background-color: white;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .filter-group select:focus {
+            border-color: var(--primary-color);
+        }
+
+        .active-filters {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+
+        .filter-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            background-color: var(--bg-color);
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            color: var(--text-primary);
+        }
+
+        .filter-tag button {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0.25rem;
+            font-size: 1.1rem;
+            line-height: 1;
+        }
+
+        .filter-tag button:hover {
+            color: var(--danger-color);
+        }
+
+        .search-form button {
+            padding: 0.75rem 1.5rem;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .search-form button:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .search-form button:active {
+            transform: translateY(0);
+        }
+
+        .summary {
+            margin-top: 1rem;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .table-container {
+            background: var(--card-bg);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: var(--bg-color);
+            font-weight: 600;
+            color: var(--text-primary);
+            position: sticky;
+            top: 0;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover {
+            background-color: var(--bg-color);
+        }
+
+        .weather-cell {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .weather-icon {
+            width: 24px;
+            height: 24px;
+        }
+
+        .weather-loading {
+            color: var(--text-secondary);
+            font-style: italic;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .weather-loading::after {
+            content: "";
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--border-color);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .pagination {
+            margin-top: 2rem;
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .pagination a, .pagination span {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            text-decoration: none;
+            color: var(--text-primary);
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .pagination a:hover {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .pagination .current {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .pagination .disabled {
+            color: var(--text-secondary);
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .badge-temp {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+
+        .badge-humidity {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-precip {
+            background-color: #f3e8ff;
+            color: #6b21a8;
+        }
+
+        .crag-link {
+            color: var(--text-primary);
+            text-decoration: none;
+            display: block;
+            padding: 0.25rem 0;
+        }
+
+        .crag-link:hover {
+            color: var(--primary-color);
+        }
+
+        .view-details {
+            font-size: 0.875rem;
+            color: var(--primary-color);
+            margin-top: 0.25rem;
+        }
+
+        .route-count {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background-color: var(--bg-color);
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .text-secondary {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .sort-header {
+            cursor: pointer;
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        .sort-header:hover {
+            color: var(--primary-color);
+        }
+
+        .sort-header::after {
+            content: "↕";
+            display: inline-block;
+            margin-left: 0.5rem;
+            opacity: 0.3;
+        }
+
+        .sort-header.active::after {
+            opacity: 1;
+            content: "↓";
+        }
+
+        .sort-header.active.desc::after {
+            content: "↑";
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>CragCast</h1>
+            <p>Find the best crag based on the weather</p>
+        </div>
+
+        <div class="search-section">
+            <form class="search-form" method="get" action="/" id="searchForm">
+                <div class="search-row">
+                    <div class="search-input">
+                        <input 
+                            type="text" 
+                            name="search" 
+                            value="{{ search_query }}" 
+                            placeholder="Search for crags by name..."
+                            aria-label="Search crags"
+                        >
+                    </div>
+                    <button type="submit">Search</button>
+                </div>
+
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label for="country">Country:</label>
+                        <select name="country" id="country">
+                            <option value="">All Countries</option>
+                            {% for country_option in countries %}
+                            <option value="{{ country_option }}" {% if selected_country == country_option %}selected{% endif %}>
+                                {{ country_option }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="rocktype">Rock Type:</label>
+                        <select name="rocktype" id="rocktype">
+                            <option value="">All Rock Types</option>
+                            {% for rock_type in rock_types %}
+                            <option value="{{ rock_type }}" {% if selected_rocktype == rock_type %}selected{% endif %}>
+                                {{ rock_type }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="county">County:</label>
+                        <select name="county" id="county">
+                            <option value="">All Counties</option>
+                            {% for county_option in counties %}
+                            <option value="{{ county_option }}" {% if selected_county == county_option %}selected{% endif %}>
+                                {{ county_option }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                {% if selected_country or selected_rocktype or selected_county or search_query %}
+                <div class="active-filters">
+                    {% if search_query %}
+                    <span class="filter-tag">
+                        Search: {{ search_query }}
+                        <button type="button" onclick="clearFilter('search')" aria-label="Clear search">&times;</button>
+                    </span>
+                    {% endif %}
+                    {% if selected_country %}
+                    <span class="filter-tag">
+                        Country: {{ selected_country }}
+                        <button type="button" onclick="clearFilter('country')" aria-label="Clear country filter">&times;</button>
+                    </span>
+                    {% endif %}
+                    {% if selected_rocktype %}
+                    <span class="filter-tag">
+                        Rock Type: {{ selected_rocktype }}
+                        <button type="button" onclick="clearFilter('rocktype')" aria-label="Clear rock type filter">&times;</button>
+                    </span>
+                    {% endif %}
+                    {% if selected_county %}
+                    <span class="filter-tag">
+                        County: {{ selected_county }}
+                        <button type="button" onclick="clearFilter('county')" aria-label="Clear county filter">&times;</button>
+                    </span>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <input type="hidden" name="sort_by" value="{{ sort_by }}" id="sortBy">
+                <input type="hidden" name="sort_order" value="{{ sort_order }}" id="sortOrder">
+                <input type="hidden" name="page" value="1">
+                <input type="hidden" name="per_page" value="{{ per_page }}">
+            </form>
+
+            <div class="summary">
+                Showing {{ crags|length }} of {{ total_crags }} crags
+                {% if search_query or selected_country or selected_rocktype or selected_county %}
+                    (filtered)
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>
+                            <div class="sort-header {% if sort_by == 'name' %}active {% if sort_order == 'desc' %}desc{% endif %}{% endif %}" 
+                                 data-sort="name">
+                                Name
+                            </div>
+                        </th>
+                        <th>
+                            <div class="sort-header {% if sort_by == 'country' %}active {% if sort_order == 'desc' %}desc{% endif %}{% endif %}" 
+                                 data-sort="country">
+                                Location
+                            </div>
+                        </th>
+                        <th>
+                            <div class="sort-header {% if sort_by == 'rocktype' %}active {% if sort_order == 'desc' %}desc{% endif %}{% endif %}" 
+                                 data-sort="rocktype">
+                                Rock Type
+                            </div>
+                        </th>
+                        <th>
+                            <div class="sort-header {% if sort_by == 'routes' %}active {% if sort_order == 'desc' %}desc{% endif %}{% endif %}" 
+                                 data-sort="routes">
+                                Routes
+                            </div>
+                        </th>
+                        <th>Weather</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for crag in crags %}
+                    <tr data-lat="{{ crag.latitude }}" data-lon="{{ crag.longitude }}">
+                        <td>
+                            <a href="/crag/{{ crag.id }}" class="crag-link">
+                                <strong>{{ crag.name }}</strong>
+                                <div class="view-details">View details →</div>
+                            </a>
+                        </td>
+                        <td>
+                            {{ crag.county }}, {{ crag.country }}<br>
+                            <span class="text-secondary">{{ crag.latitude }}, {{ crag.longitude }}</span>
+                        </td>
+                        <td>{{ crag.rocktype }}</td>
+                        <td>
+                            <span class="route-count">{{ crag.routes_count }} routes</span>
+                        </td>
+                        <td class="weather-data">
+                            <div class="weather-cell">
+                                {% if crag.weather and crag.weather.temperature is not none %}
+                                    <span class="badge badge-temp">{{ crag.weather.temperature }}°C</span>
+                                    <span class="badge badge-humidity">{{ crag.weather.humidity }}%</span>
+                                    <span class="badge badge-precip">{{ crag.weather.precipitation }}mm</span>
+                                {% else %}
+                                    <span class="weather-loading">Loading weather data...</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination">
+            {% if current_page > 1 %}
+                <a href="?page=1&search={{ search_query }}&per_page={{ per_page }}">&laquo; First</a>
+                <a href="?page={{ current_page - 1 }}&search={{ search_query }}&per_page={{ per_page }}">Previous</a>
+            {% else %}
+                <span class="disabled">&laquo; First</span>
+                <span class="disabled">Previous</span>
+            {% endif %}
+
+            <span class="current">Page {{ current_page }} of {{ total_pages }}</span>
+
+            {% if current_page < total_pages %}
+                <a href="?page={{ current_page + 1 }}&search={{ search_query }}&per_page={{ per_page }}">Next</a>
+                <a href="?page={{ total_pages }}&search={{ search_query }}&per_page={{ per_page }}">Last &raquo;</a>
+            {% else %}
+                <span class="disabled">Next</span>
+                <span class="disabled">Last &raquo;</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        // Function to fetch weather data for a specific coordinate
+        async function fetchWeather(lat, lon, row) {
+            const weatherCell = row.querySelector('.weather-data');
+            try {
+                const response = await fetch(`/api/weather/${lat}/${lon}`);
+                if (!response.ok) {
+                    throw new Error('Weather data not available');
+                }
+                const weather = await response.json();
+                
+                // Create weather badges
+                weatherCell.innerHTML = `
+                    <div class="weather-cell">
+                        <span class="badge badge-temp">${weather.temperature ?? 'N/A'}°C</span>
+                        <span class="badge badge-humidity">${weather.humidity ?? 'N/A'}%</span>
+                        <span class="badge badge-precip">${weather.precipitation ?? 'N/A'}mm</span>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error fetching weather:', error);
+                weatherCell.innerHTML = '<div class="weather-cell">Weather data unavailable</div>';
+            }
+        }
+
+        // Create an Intersection Observer
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const row = entry.target;
+                    const lat = row.dataset.lat;
+                    const lon = row.dataset.lon;
+                    if (row.querySelector('.weather-loading')) {
+                        fetchWeather(lat, lon, row);
+                    }
+                    observer.unobserve(row);
+                }
+            });
+        }, {
+            root: null,
+            rootMargin: '50px',
+            threshold: 0.1
+        });
+
+        // Observe all rows that need weather data
+        document.querySelectorAll('tr[data-lat][data-lon]').forEach(row => {
+            if (row.querySelector('.weather-loading')) {
+                observer.observe(row);
+            }
+        });
+
+        // Clean up observer when the page is unloaded
+        window.addEventListener('unload', () => observer.disconnect());
+
+        // Add this before the existing script
+        function clearFilter(filterName) {
+            const form = document.getElementById('searchForm');
+            const input = form.querySelector(`[name="${filterName}"]`);
+            if (input) {
+                input.value = '';
+                form.submit();
+            }
+        }
+
+        // Add event listeners for filter changes
+        document.querySelectorAll('.filter-group select').forEach(select => {
+            select.addEventListener('change', () => {
+                document.getElementById('searchForm').submit();
+            });
+        });
+
+        // Handle sorting
+        document.querySelectorAll('.sort-header').forEach(header => {
+            header.addEventListener('click', () => {
+                const sortBy = header.dataset.sort;
+                const currentSortBy = document.getElementById('sortBy').value;
+                const currentSortOrder = document.getElementById('sortOrder').value;
+                
+                // If clicking the same column, toggle the order
+                const newSortOrder = (sortBy === currentSortBy && currentSortOrder === 'asc') ? 'desc' : 'asc';
+                
+                document.getElementById('sortBy').value = sortBy;
+                document.getElementById('sortOrder').value = newSortOrder;
+                document.getElementById('searchForm').submit();
+            });
+        });
+    </script>
+</body>
+</html>

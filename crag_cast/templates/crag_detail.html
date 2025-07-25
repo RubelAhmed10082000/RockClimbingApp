@@ -352,7 +352,7 @@
                 </div>
 
                 <!-- Routes Section -->
-                {% if crag.routes %}
+                {% if crag.crag_routes %}
                 <div class="card" style="margin-top: 2rem;">
                     <h2 class="card-title">Routes ({{ crag.crag_routes|length }})</h2>
                     <div class="routes-controls">
@@ -375,11 +375,6 @@
                             <div class="route-name">
                                 {{ route.name }}
                                 <span class="route-grade">{{ route.grade }}</span>
-                                {% if route.stars > 0 %}
-                                <span class="route-stars">
-                                    {% for i in range(route.stars) %}★{% endfor %}
-                                </span>
-                                {% endif %}
                             </div>
                             <div class="route-info">
                                 {% if route.type %}

@@ -4,7 +4,6 @@ from flask_paginate import Pagination, get_page_args
 from urllib.parse import urlencode
 from crag_cast import app
 
-
 CRAG_DATA_PATH = 'crag_cast/db/crag_df.csv'
 WEATHER_DATA_PATH = 'crag_cast/db/cleaned_weather_df.csv'
 crag_df = pd.read_csv(CRAG_DATA_PATH)
@@ -146,12 +145,42 @@ def paginated_results():
 
 @app.route('/crag/<int:crag_id>')
 def crag_detail(crag_id):
-        crag_routes = crag_df[crag_df['crag_id'] == crag_id]
-        if crag_routes.empty:
-            return render_template('crag_detail.html', crag=crag, routes=[])
+    crag_routes_df = crag_df[crag_df['crag_id'] == crag_id]
+    if crag_routes_df.empty:
+        return render_template('crag_detail.html', crag={}, weather=None)
 
-        crag = crag_routes.iloc[0][['crag_id', 'crag_name', 'country', 'county', 'latitude', 'longitude', 'rocktype']]
+    first_row = crag_routes_df.iloc[0]
 
-        routes = crag_routes[['sector_name', 'route_name', 'type', 'difficulty_grade', 'safety_grade']].dropna(subset=['route_name'])
+    crag = {
+        'crag_id': crag_id,
+        'crag_name': first_row.get('crag_name'),
+        'crag_country': first_row.get('country'),
+        'crag_county': first_row.get('county'),
+        'crag_latitude': first_row.get('latitude'),
+        'crag_longitude': first_row.get('longitude'),
+        'crag_rocktype': first_row.get('rocktype'),
+        'access': first_row.get('access', ''),
+        'crag_routes': []
+    }
 
-        return render_template('crag_detail.html', crag=crag, routes=routes.to_dict(orient='records'))
+    for _, row in crag_routes_df.iterrows():
+        crag['crag_routes'].append({
+            'name': row.get('route_name'),
+            'grade': row.get('difficulty_grade'),
+            'type': row.get('type'),
+        })
+
+    weather = None
+    latlon = f"{round(crag['crag_latitude'], 4)}_{round(crag['crag_longitude'], 4)}"
+    if 'latlon' in weather_df.columns:
+        weather_row = weather_df[weather_df['latlon'] == latlon]
+        if not weather_row.empty:
+            weather = {
+                'temperature': weather_row.iloc[0].get('temperature', '—'),
+                'humidity': weather_row.iloc[0].get('humidity', '—'),
+                'precipitation': weather_row.iloc[0].get('precipitation', '—')
+            }
+
+    return render_template('crag_detail.html', crag=crag, weather=weather)
+
+

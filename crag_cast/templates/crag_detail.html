@@ -517,7 +517,7 @@
     <!-- Map and Weather Script -->
     <script>
         // Initialize the map
-        const map = L.map('map').setView([{{ crag.latitude }}, {{ crag.longitude }}], 13);
+        const map = L.map('map').setView([{{ crag.crag_latitude }}, {{ crag.crag_longitude }}], 13);
         
         // Add OpenStreetMap tiles
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -525,7 +525,7 @@
         }).addTo(map);
 
         // Add a marker for the crag
-        L.marker([{{ crag.latitude }}, {{ crag.longitude }}])
+        L.marker([{{ crag.crag_latitude }}, {{ crag.crag_longitude }}])
             .addTo(map)
             .bindPopup('{{ crag.name }}');
 

@@ -3,6 +3,8 @@ from flask import Flask, render_template, request
 from flask_paginate import Pagination, get_page_args
 from urllib.parse import urlencode
 from crag_cast import app
+import requests
+from flask import jsonify
 
 CRAG_DATA_PATH = 'crag_cast/db/crag_df.csv'
 WEATHER_DATA_PATH = 'crag_cast/db/cleaned_weather_df.csv'
@@ -62,6 +64,19 @@ def index():
     # Dummy weather and routes_count for now
     crags = []
     for _, row in page_crags.iterrows():
+        latlon_key = row['latlon']
+        weather_row = weather_df[weather_df['latlon'] == latlon_key]
+
+        if not weather_row.empty:
+            weather_data = weather_row.iloc[0]
+            weather = {
+                'temperature': weather_data['temperature'],
+                'humidity': weather_data['humidity'],
+                'precipitation': weather_data['precipitation']
+            }
+        else:
+            weather = None
+
         crags.append({
             'id': row['crag_id'],
             'crag_name': row['crag_name'],
@@ -71,7 +86,7 @@ def index():
             'longitude': row['longitude'],
             'rocktype': row['rocktype'],
             'routes_count': len(crag_df[crag_df['crag_id'] == row['crag_id']]),
-            'weather': None  
+            'weather': weather  
         })
 
     base_args = {
@@ -183,4 +198,23 @@ def crag_detail(crag_id):
 
     return render_template('crag_detail.html', crag=crag, weather=weather)
 
+@app.route('/api/weather/<lat>/<lon>')
+def get_weather(lat,lon):
+    try:
+        url = (
+            f"https://api.open-meteo.com/v1/forecast?"
+            f"latitude={lat}&longitude={lon}"
+            f"&current_weather=true"
+        )
+        response = requests.get(url)
+        data = response.json()
+
+        current = data.get("current_weather", {})
+        return jsonify({
+            "temperature": current.get("temperature"),
+            "humidity": current.get("relative_humidity"),  # May not be provided by all endpoints
+            "precipitation": current.get("precipitation", 0)
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 

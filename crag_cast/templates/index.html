@@ -567,13 +567,7 @@
                         </td>
                         <td class="weather-data">
                             <div class="weather-cell">
-                                {% if crag.weather and crag.weather.temperature is not none %}
-                                    <span class="badge badge-temp">{{ crag.weather.temperature }}°C</span>
-                                    <span class="badge badge-humidity">{{ crag.weather.humidity }}%</span>
-                                    <span class="badge badge-precip">{{ crag.weather.precipitation }}mm</span>
-                                {% else %}
-                                    <span class="weather-loading">Loading weather data...</span>
-                                {% endif %}
+                                     <span class="weather-loading">Loading weather data...</span>
                             </div>
                         </td>
                     </tr>

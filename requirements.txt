@@ -2,3 +2,4 @@ flask
 pandas
 pyarrow
 flask-paginate
+requests

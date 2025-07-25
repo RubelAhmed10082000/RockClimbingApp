@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ crag.crag_name }} - Climbing Crag Details</title>
+
+    <!-- External Resources -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Styles -->
+    <style>
+        /* CSS Variables */
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --success-color: #22c55e;
+            --warning-color: #eab308;
+            --danger-color: #ef4444;
+        }
+
+        /* Reset & Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.5;
+        }
+
+        /* Layout */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .crag-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .crag-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Navigation */
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--primary-color);
+            text-decoration: none;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        .back-link:hover {
+            color: var(--primary-hover);
+        }
+
+        /* Header */
+        .crag-header {
+            margin-bottom: 2rem;
+        }
+
+        .crag-header h1 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .crag-header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card-bg);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        /* Information Grid */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .info-item {
+            padding: 1rem;
+            background-color: var(--bg-color);
+            border-radius: 0.5rem;
+        }
+
+        .info-item-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .info-item-value {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        /* Map */
+        .map-container {
+            height: 400px;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Weather Badges */
+        .weather-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .weather-temp {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+
+        .weather-humidity {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+
+        .weather-precip {
+            background-color: #f3e8ff;
+            color: #6b21a8;
+        }
+
+        /* Routes Section */
+        .routes-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .route-item {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            display: block;
+        }
+
+        .route-item.hidden {
+            display: none;
+        }
+
+        .route-item:last-child {
+            border-bottom: none;
+        }
+
+        .route-name {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .route-grade {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            background-color: var(--bg-color);
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-left: 0.5rem;
+        }
+
+        .route-stars {
+            color: #eab308;
+            margin-left: 0.5rem;
+        }
+
+        .route-info {
+            margin-top: 0.25rem;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .route-type, .route-difficulty {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            background-color: var(--bg-color);
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+        }
+
+        .route-description {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+
+        .no-routes {
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        /* Routes Controls */
+        .routes-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .routes-per-page {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .routes-per-page select {
+            padding: 0.25rem 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 0.25rem;
+            background-color: white;
+        }
+
+        .routes-search {
+            flex: 1;
+        }
+
+        .routes-search input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+        }
+
+        .routes-search input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        /* Routes Pagination */
+        .routes-pagination {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .pagination-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-color);
+            background-color: white;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+        }
+
+        .pagination-btn:not(:disabled):hover {
+            background-color: var(--bg-color);
+        }
+
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        #pageInfo {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Navigation -->
+        <a href="/" class="back-link">← Back to Crags List</a>
+
+        <!-- Header -->
+        <div class="crag-header">
+            <h1>{{ crag.crag_name }}</h1>
+            <p>{{ crag.crag_county }}, {{ crag.crag_country }}</p>
+        </div>
+
+        <div class="crag-grid">
+            <!-- Main Content -->
+            <div class="main-content">
+                <!-- Location Information -->
+                <div class="card">
+                    <h2 class="card-title">Location & Information</h2>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-item-label">Rock Type</div>
+                            <div class="info-item-value">{{ crag.crag_rocktype }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-item-label">County</div>
+                            <div class="info-item-value">{{ crag.crag_county }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-item-label">Country</div>
+                            <div class="info-item-value">{{ crag.crag_country }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-item-label">Coordinates</div>
+                            <div class="info-item-value">{{ crag.crag_latitude }}, {{ crag.longitude }}</div>
+                        </div>
+                    </div>
+
+                    <h3 class="card-title">Location Map</h3>
+                    <div id="map" class="map-container"></div>
+
+                    {% if crag.crag_description %}
+                    <h3 class="card-title">About this Crag</h3>
+                    <p>{{ crag.crag_description }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Routes Section -->
+                {% if crag.routes %}
+                <div class="card" style="margin-top: 2rem;">
+                    <h2 class="card-title">Routes ({{ crag.crag_routes|length }})</h2>
+                    <div class="routes-controls">
+                        <div class="routes-per-page">
+                            <label for="routesPerPage">Routes per page:</label>
+                            <select id="routesPerPage">
+                                <option value="10">10</option>
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                            </select>
+                        </div>
+                        <div class="routes-search">
+                            <input type="text" id="routeSearch" placeholder="Search routes...">
+                        </div>
+                    </div>
+                    <ul class="routes-list" id="routesList">
+                        {% for route in crag.crag_routes %}
+                        <li class="route-item">
+                            <div class="route-name">
+                                {{ route.name }}
+                                <span class="route-grade">{{ route.grade }}</span>
+                                {% if route.stars > 0 %}
+                                <span class="route-stars">
+                                    {% for i in range(route.stars) %}★{% endfor %}
+                                </span>
+                                {% endif %}
+                            </div>
+                            <div class="route-info">
+                                {% if route.type %}
+                                <span class="route-type">{{ route.type }}</span>
+                                {% endif %}
+                                {% if route.difficulty %}
+                                <span class="route-difficulty">{{ route.difficulty }}</span>
+                                {% endif %}
+                            </div>
+                            {% if route.description %}
+                            <div class="route-description">{{ route.description }}</div>
+                            {% endif %}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    <div class="routes-pagination">
+                        <button id="prevPage" class="pagination-btn" disabled>&larr; Previous</button>
+                        <span id="pageInfo">Page <span id="currentPage">1</span> of <span id="totalPages">1</span></span>
+                        <button id="nextPage" class="pagination-btn" disabled>Next &rarr;</button>
+                    </div>
+                </div>
+                {% else %}
+                <div class="card" style="margin-top: 2rem;">
+                    <h2 class="card-title">Routes</h2>
+                    <p class="no-routes">No routes available for this crag.</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- Weather Information -->
+                <div class="card">
+                    <h2 class="card-title">Current Weather</h2>
+                    {% if weather %}
+                    <div>
+                        <span class="weather-badge weather-temp">{{ weather.temperature }}°C</span>
+                        <span class="weather-badge weather-humidity">{{ weather.humidity }}% Humidity</span>
+                        <span class="weather-badge weather-precip">{{ weather.precipitation }}mm Precipitation</span>
+                    </div>
+                    {% else %}
+                    <p>Weather information unavailable</p>
+                    {% endif %}
+                </div>
+
+                <!-- Access Information -->
+                {% if crag.access %}
+                <div class="card" style="margin-top: 2rem;">
+                    <h2 class="card-title">Access Information</h2>
+                    <p>{{ crag.access }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Route Pagination Script -->
+    <script>
+        // Route pagination and search functionality
+        const routesList = document.getElementById('routesList');
+        
+        // Only initialize pagination if routes list exists
+        if (routesList) {
+            const routeItems = Array.from(routesList.getElementsByClassName('route-item'));
+            const prevPageBtn = document.getElementById('prevPage');
+            const nextPageBtn = document.getElementById('nextPage');
+            const currentPageSpan = document.getElementById('currentPage');
+            const totalPagesSpan = document.getElementById('totalPages');
+            const routesPerPageSelect = document.getElementById('routesPerPage');
+            const routeSearch = document.getElementById('routeSearch');
+
+            let currentPage = 1;
+            let routesPerPage = parseInt(routesPerPageSelect.value);
+            let filteredRoutes = routeItems;
+
+            function updatePagination() {
+                const totalPages = Math.ceil(filteredRoutes.length / routesPerPage);
+                currentPage = Math.min(currentPage, totalPages);
+                
+                // Update buttons and page info
+                prevPageBtn.disabled = currentPage === 1;
+                nextPageBtn.disabled = currentPage === totalPages;
+                currentPageSpan.textContent = currentPage;
+                totalPagesSpan.textContent = totalPages;
+
+                // Show/hide routes
+                routeItems.forEach(function(item) {
+                    item.classList.add('hidden');
+                });
+                const start = (currentPage - 1) * routesPerPage;
+                const end = start + routesPerPage;
+                filteredRoutes.slice(start, end).forEach(function(item) {
+                    item.classList.remove('hidden');
+                });
+            }
+
+            function filterRoutes() {
+                const searchTerm = routeSearch.value.toLowerCase();
+                filteredRoutes = routeItems.filter(item => {
+                    const routeName = item.querySelector('.route-name').textContent.toLowerCase();
+                    const routeType = item.querySelector('.route-type')?.textContent.toLowerCase() || '';
+                    const routeGrade = item.querySelector('.route-grade').textContent.toLowerCase();
+                    return routeName.includes(searchTerm) || 
+                           routeType.includes(searchTerm) || 
+                           routeGrade.includes(searchTerm);
+                });
+                currentPage = 1;
+                updatePagination();
+            }
+
+            // Event listeners
+            prevPageBtn.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    updatePagination();
+                }
+            });
+
+            nextPageBtn.addEventListener('click', () => {
+                const totalPages = Math.ceil(filteredRoutes.length / routesPerPage);
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    updatePagination();
+                }
+            });
+
+            routesPerPageSelect.addEventListener('change', () => {
+                routesPerPage = parseInt(routesPerPageSelect.value);
+                currentPage = 1;
+                updatePagination();
+            });
+
+            routeSearch.addEventListener('input', filterRoutes);
+
+            // Initialize pagination
+            updatePagination();
+        }
+    </script>
+
+    <!-- Map and Weather Script -->
+    <script>
+        // Initialize the map
+        const map = L.map('map').setView([{{ crag.latitude }}, {{ crag.longitude }}], 13);
+        
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Add a marker for the crag
+        L.marker([{{ crag.latitude }}, {{ crag.longitude }}])
+            .addTo(map)
+            .bindPopup('{{ crag.name }}');
+
+        // Update weather data periodically
+        async function updateWeather() {
+            try {
+                const response = await fetch(`/api/weather/{{ crag.latitude }}/{{ crag.longitude }}`);
+                if (response.ok) {
+                    const weather = await response.json();
+                    const weatherHtml = `
+                        <span class="weather-badge weather-temp">${weather.temperature}°C</span>
+                        <span class="weather-badge weather-humidity">${weather.humidity}% Humidity</span>
+                        <span class="weather-badge weather-precip">${weather.precipitation}mm Precipitation</span>
+                    `;
+                    document.querySelector('.card:first-child div').innerHTML = weatherHtml;
+                }
+            } catch (error) {
+                console.error('Error updating weather:', error);
+            }
+        }
+
+        // Update weather every 5 minutes
+        setInterval(updateWeather, 300000);
+    </script>
+</body>
+</html> 

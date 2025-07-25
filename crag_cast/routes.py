@@ -1,12 +1,12 @@
-from flask import Flask, render_template, request
 import pandas as pd
+from flask import Flask, render_template, request
 from flask_paginate import Pagination, get_page_args
 from urllib.parse import urlencode
+from crag_cast import app
 
-app = Flask(__name__)
 
-CRAG_DATA_PATH = 'Working_Code/Files/crag_df.csv'
-WEATHER_DATA_PATH = 'Working_Code/Files/cleaned_weather_df.csv'
+CRAG_DATA_PATH = 'crag_cast/db/crag_df.csv'
+WEATHER_DATA_PATH = 'crag_cast/db/cleaned_weather_df.csv'
 crag_df = pd.read_csv(CRAG_DATA_PATH)
 weather_df = pd.read_csv(WEATHER_DATA_PATH)
 
@@ -38,7 +38,7 @@ def index():
         page, per_page, offset = 1, 10, 0
 
     # Filter crags
-    filtered = crag_df.copy()
+    filtered = crag_df.drop_duplicates(subset='crag_id').copy()
     if search_query:
         filtered = filtered[filtered['crag_name'].str.contains(search_query, case=False, na=False)]
     if selected_country and '' not in selected_country:
@@ -71,8 +71,8 @@ def index():
             'latitude': row['latitude'],
             'longitude': row['longitude'],
             'rocktype': row['rocktype'],
-            'routes_count': row.get('routes_count', 0),
-            'weather': None  # or add weather if available
+            'routes_count': len(crag_df[crag_df['crag_id'] == row['crag_id']]),
+            'weather': None  
         })
 
     base_args = {
@@ -124,7 +124,7 @@ def index():
         total_pages = (total_crags + per_page - 1) // per_page
     )
 
-"""@app.route('/results')
+@app.route('/results')
 def paginated_results():
     page = int(request.args.get('page', 1))
     per_page = 10
@@ -142,12 +142,16 @@ def paginated_results():
     crags = merged.to_dict(orient='records')
     total = len(filtered)
 
-    return render_template('results.html', crags=crags, page=page, per_page=per_page, total=total)"""
+    return render_template('results.html', crags=crags, page=page, per_page=per_page, total=total)
 
 @app.route('/crag/<int:crag_id>')
 def crag_detail(crag_id):
-    crag = crag_df[crag_df['crag_id'] == crag_id].iloc[0]
-    return render_template('crag_detail.html', crag=crag)
+        crag_routes = crag_df[crag_df['crag_id'] == crag_id]
+        if crag_routes.empty:
+            return render_template('crag_detail.html', crag=crag, routes=[])
 
-if __name__ == '__main__':
-    app.run(debug=True)
+        crag = crag_routes.iloc[0][['crag_id', 'crag_name', 'country', 'county', 'latitude', 'longitude', 'rocktype']]
+
+        routes = crag_routes[['sector_name', 'route_name', 'type', 'difficulty_grade', 'safety_grade']].dropna(subset=['route_name'])
+
+        return render_template('crag_detail.html', crag=crag, routes=routes.to_dict(orient='records'))

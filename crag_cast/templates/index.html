@@ -428,7 +428,7 @@
                         <select name="country" id="country" multiple>
                             <option value="">All Countries</option>
                             {% for country_option in countries %}
-                            <option value="{{ country_option }}" {% if country_option in selected_country %}selected{% endif %}>
+                            <option value="{{ country_option }}" {% if country in selected_country %}selected{% endif %}>
                                 {{ country_option }}
                             </option>
                             {% endfor %}
@@ -453,7 +453,7 @@
                         <select name="county" id="county" multiple>
                             <option value="">All Counties</option>
                             {% for county_option in counties %}
-                            <option value="{{ county_option }}" {% if county in selected_county %}selected{% endif %}>
+                            <option value="{{ county_option }}" {% if county_option in selected_county %}selected{% endif %}>
                                 {{ county_option }}
                             </option>
                             {% endfor %}
@@ -466,7 +466,7 @@
                         <select name="type" id="type" multiple>
                             <option value="">All climbing styles</option>
                             {% for type_option in type %}
-                            <option value="{{ type_option }}" {% if type in selected_type %}selected{% endif %}>
+                            <option value="{{ type_option }}" {% if type_option in selected_type %}selected{% endif %}>
                                 {{ type_option }}
                             </option>
                             {% endfor %}
@@ -554,7 +554,7 @@
                         <td>
                             <a href="/crag/{{ crag.id }}" class="crag-link">
                                 <strong>{{ crag.name }}</strong>
-                                <div class="view-details">View details →</div>
+                                <div class="view-details">{{ crag.crag_name }} →</div>
                             </a>
                         </td>
                         <td>
@@ -592,23 +592,7 @@
 {%- endmacro %}
 
 <div class="pagination">
-    {% if current_page > 1 %}
-        <a href="?page=1{{ filter_query_string() }}">&laquo; First</a>
-        <a href="?page={{ current_page - 1 }}{{ filter_query_string() }}">Previous</a>
-    {% else %}
-        <span class="disabled">&laquo; First</span>
-        <span class="disabled">Previous</span>
-    {% endif %}
-
-    <span class="current">Page {{ current_page }} of {{ total_pages }}</span>
-
-    {% if current_page < total_pages %}
-        <a href="?page={{ current_page + 1 }}{{ filter_query_string() }}">Next</a>
-        <a href="?page={{ total_pages }}{{ filter_query_string() }}">Last &raquo;</a>
-    {% else %}
-        <span class="disabled">Next</span>
-        <span class="disabled">Last &raquo;</span>
-    {% endif %}
+    {{ pagination.links }}
 </div>
 
     <span class="current">Page {{ current_page }} of {{ total_pages }}</span>
@@ -692,14 +676,33 @@
         window.addEventListener('unload', () => observer.disconnect());
 
         // Add this before the existing script
-        function clearFilter(filterName) {
+        function clearFilter(filterName, filterValue = null) {
             const form = document.getElementById('searchForm');
-            const input = form.querySelector(`[name="${filterName}"]`);
-            if (input) {
-                input.value = '';
-                form.submit();
+            if (filterName === 'search') {
+                form.querySelector('[name="search"]').value = '';
+            } else {
+                const selectElement = form.querySelector(`select[name="${filterName}"]`);
+                if (selectElement) {
+                    if (filterValue) {
+                        // If a specific value is to be cleared (for multi-selects)
+                        const options = Array.from(selectElement.options);
+                        options.forEach(option => {
+                            if (option.value === filterValue) {
+                                option.selected = false;
+                            }
+                        });
+                    } else {
+                        // If the entire filter type is to be cleared (e.g., all countries)
+                        Array.from(selectElement.options).forEach(option => {
+                            option.selected = false;
+                        });
+                        selectElement.value = ''; // Reset to "All..." option if it exists
+                    }
+                }
             }
+            form.submit();
         }
+
 
         // Add event listeners for filter changes
         document.querySelectorAll('.filter-group select').forEach(select => {

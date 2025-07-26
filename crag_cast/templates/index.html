@@ -621,17 +621,17 @@
             const weatherCell = row.querySelector('.weather-data');
             try {
                 const response = await fetch(`/api/weather/${lat}/${lon}`);
-                if (!response.ok) {
-                    throw new Error('Weather data not available');
-                }
                 const weather = await response.json();
+                if (weather.error) throw Error(weather.error);
                 
+
                 // Create weather badges
                 weatherCell.innerHTML = `
                     <div class="weather-cell">
                         <span class="badge badge-temp">${weather.temperature ?? 'N/A'}°C</span>
                         <span class="badge badge-humidity">${weather.humidity ?? 'N/A'}%</span>
                         <span class="badge badge-precip">${weather.precipitation ?? 'N/A'}mm</span>
+                        <span class="badge badge-wind">${weather.windspeed ?? 'N/A'} km/h</span>
                     </div>
                 `;
             } catch (error) {

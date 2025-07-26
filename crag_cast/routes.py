@@ -2,9 +2,10 @@ import pandas as pd
 from flask import Flask, render_template, request
 from flask_paginate import Pagination, get_page_args
 from urllib.parse import urlencode
-from crag_cast import app
+from crag_cast import app, cache
 import requests
 from flask import jsonify
+
 
 CRAG_DATA_PATH = 'crag_cast/db/crag_df.csv'
 WEATHER_DATA_PATH = 'crag_cast/db/cleaned_weather_df.csv'
@@ -185,35 +186,41 @@ def crag_detail(crag_id):
             'type': row.get('type'),
         })
 
-    weather = None
-    latlon = f"{round(crag['crag_latitude'], 4)}_{round(crag['crag_longitude'], 4)}"
-    if 'latlon' in weather_df.columns:
-        weather_row = weather_df[weather_df['latlon'] == latlon]
-        if not weather_row.empty:
-            weather = {
-                'temperature': weather_row.iloc[0].get('temperature', '—'),
-                'humidity': weather_row.iloc[0].get('humidity', '—'),
-                'precipitation': weather_row.iloc[0].get('precipitation', '—')
-            }
+    return render_template('crag_detail.html', crag=crag)
 
-    return render_template('crag_detail.html', crag=crag, weather=weather)
+
 
 @app.route('/api/weather/<lat>/<lon>')
+@cache.memoize()
 def get_weather(lat,lon):
     try:
         url = (
             f"https://api.open-meteo.com/v1/forecast?"
             f"latitude={lat}&longitude={lon}"
             f"&current_weather=true"
+            f"&hourly=temperature_2m,relative_humidity_2m,precipitation,windspeed_10m"
+            f"&timezone=auto"
         )
         response = requests.get(url)
         data = response.json()
 
         current = data.get("current_weather", {})
+        hourly = data.get("hourly", {})
+        current_time = current.get("time")
+
+        if current_time in hourly.get("time",[]):
+            idx = hourly['time'].index(current_time)
+            humidity = hourly.get("relative_humidity_2m", [None])[idx]
+            precipitation = hourly.get("precipitation", [None])[idx]
+        else:
+            humidity = None
+            precipitation = None
+
         return jsonify({
             "temperature": current.get("temperature"),
-            "humidity": current.get("relative_humidity"),  # May not be provided by all endpoints
-            "precipitation": current.get("precipitation", 0)
+            "humidity": humidity,
+            "precipitation": precipitation,
+            "windspeed": current.get("windspeed")
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500

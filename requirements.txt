@@ -3,3 +3,4 @@ pandas
 pyarrow
 flask-paginate
 requests
+flask-caching

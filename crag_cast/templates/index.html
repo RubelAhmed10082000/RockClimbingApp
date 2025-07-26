@@ -249,6 +249,7 @@
         .weather-cell {
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 0.5rem;
         }
 
@@ -264,6 +265,7 @@
             font-size: 1.1rem;
             margin-bottom: 0.5rem;
             color: var(--text-primary);
+            text-align: center;
         }
 
         .weather-metric {
@@ -480,7 +482,7 @@
                 
 
                     <div class="filter-group">
-                        <label for="county">County:</label>
+                        <label for="county">Region:</label>
                         <select name="county" id="county" multiple>
                             <option value="">All Counties</option>
                             {% for county_option in counties %}
@@ -666,7 +668,6 @@
 
                 weatherCell.innerHTML = `
 
-
                         <div class="weather-metric">
                             <div class="metric-label">Temperature(C)</div>
                             <span class="badge badge-temp">${weather.temperature ?? 'N/A'}°C</span>
@@ -679,12 +680,12 @@
 
                         <div class="weather-metric">
                             <div class="metric-label">Precipitation(mm)</div>
-                            <span class="badge badge-precip">${weather.precipitation ?? 'N/A'}mm</span>
+                            <span class="badge badge-precip">${weather.precipitation ?? 'N/A'} mm</span>
                         </div>
 
                         <div class="weather-metric">
                             <div class="metric-label">Windspeed(Km/h)</div>
-                            <span class="badge badge-windspeed">${weather.windspeed ?? 'N/A'}Km/h</span>
+                            <span class="badge badge-windspeed">${weather.windspeed ?? 'N/A'} Km/h</span>
                         </div>
                     </div>
                 `;

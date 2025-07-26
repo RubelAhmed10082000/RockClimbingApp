@@ -1,4 +1,3 @@
-<!-- app/templates/crags.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -251,6 +250,33 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
+        }
+
+        .weather-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .weather-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .weather-metric {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0.25rem 0;
+        }
+
+        .metric-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.15rem;
         }
 
         .weather-icon {
@@ -571,17 +597,37 @@
                             <span class="route-count">{{ crag.routes_count }} routes</span>
                         </td>
                         <td class="weather-data">
-                            <div class="weather-cell">
-                                     <span class="weather-loading">Loading weather data...</span>
+                            <div class="weather-cell weather-block">
+                                <div class="weather-title">Weather</div>
+                                {% if crag.weather and crag.weather.temperature is not none %}
+                                    <div class="weather-metric">
+                                        <div class="metric-label">Temperature(C)</div>
+                                        <span class="badge badge-temp"> {{ crag.weather.temperature }}°C</span>
+                                    </div>
+                                    <div class="weather-metric">
+                                        <div class="metric-label">Humidity(%)</div>
+                                        <span class="badge badge-humidity">{{ crag.weather.humidty }}</span>
+                                    </div>
+                                    <div class="weather-metric">
+                                        <div class="metric-label">Precipitation(mm)</div>
+                                        <span class="badge badge-precip">{{ crag.weather.precipitation }}mm</span>
+                                    </div>
+                                    <div class="weather-metric">
+                                        <div class="metric-label">Windspeed(km/h)</div>
+                                        <span class="badge badge-windspeed">{{ crag.weather.windspeed }} km/h</span>
+                                    </div>
+                                {% else %}
+                                    <span class="weather-loading">Loading weather data...</span>
+                                {% endif %}
                             </div>
                         </td>
                     </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
-{% macro filter_query_string() -%}
+    {% macro filter_query_string() -%}
     {% for c in selected_country %}&country={{ c }}{% endfor %}
     {% for r in selected_rocktype %}&rocktype={{ r }}{% endfor %}
     {% for y in selected_county %}&county={{ y }}{% endfor %}
@@ -590,35 +636,22 @@
     &sort_by={{ sort_by }}&sort_order={{ sort_order }}&per_page={{ per_page }}
 {%- endmacro %}
 
+
 <div class="pagination">
     {{ pagination.links }}
 </div>
 
+<div class="pagination">
     <span class="current">Page {{ current_page }} of {{ total_pages }}</span>
 
     {% if current_page < total_pages %}
-        <a href="?page={{ current_page + 1 }}
-            {% for c in selected_country %}&country={{ c }}{% endfor %}
-            {% for r in selected_rocktype %}&rocktype={{ r }}{% endfor %}
-            {% for y in selected_county %}&county={{ y }}{% endfor %}
-            {% for t in selected_type %}&type={{ t }}{% endfor %}
-            &search={{ search_query }}&sort_by={{ sort_by }}&sort_order={{ sort_order }}&per_page={{ per_page }}">
-            Next
-        </a>
-        <a href="?page={{ total_pages }}
-            {% for c in selected_country %}&country={{ c }}{% endfor %}
-            {% for r in selected_rocktype %}&rocktype={{ r }}{% endfor %}
-            {% for y in selected_county %}&county={{ y }}{% endfor %}
-            {% for t in selected_type %}&type={{ t }}{% endfor %}
-            &search={{ search_query }}&sort_by={{ sort_by }}&sort_order={{ sort_order }}&per_page={{ per_page }}">
-            Last &raquo;
-        </a>
+        <a href="?page={{ current_page + 1 }}{{ filter_query_string() }}">Next</a>
+        <a href="?page={{ total_pages }}{{ filter_query_string() }}">Last &raquo;</a>
     {% else %}
         <span class="disabled">Next</span>
         <span class="disabled">Last &raquo;</span>
     {% endif %}
 </div>
-
 
     <script>
         // Function to fetch weather data for a specific coordinate
@@ -630,13 +663,29 @@
                 if (weather.error) throw Error(weather.error);
                 
 
-                // Create weather badges
+
                 weatherCell.innerHTML = `
-                    <div class="weather-cell">
-                        <span class="badge badge-temp">${weather.temperature ?? 'N/A'}°C</span>
-                        <span class="badge badge-humidity">${weather.humidity ?? 'N/A'}%</span>
-                        <span class="badge badge-precip">${weather.precipitation ?? 'N/A'}mm</span>
-                        <span class="badge badge-windspeed">${weather.windspeed ?? 'N/A'} km/h</span>
+
+
+                        <div class="weather-metric">
+                            <div class="metric-label">Temperature(C)</div>
+                            <span class="badge badge-temp">${weather.temperature ?? 'N/A'}°C</span>
+                        </div>
+
+                        <div class="weather-metric">
+                            <div class="metric-label">Humidity(%)</div>
+                            <span class="badge badge-humidity">${weather.humidity ?? 'N/A'}%</span>
+                        </div>
+
+                        <div class="weather-metric">
+                            <div class="metric-label">Precipitation(mm)</div>
+                            <span class="badge badge-precip">${weather.precipitation ?? 'N/A'}mm</span>
+                        </div>
+
+                        <div class="weather-metric">
+                            <div class="metric-label">Windspeed(Km/h)</div>
+                            <span class="badge badge-windspeed">${weather.windspeed ?? 'N/A'}Km/h</span>
+                        </div>
                     </div>
                 `;
             } catch (error) {

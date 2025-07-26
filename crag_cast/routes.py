@@ -6,7 +6,10 @@ from crag_cast import app, cache
 import requests
 from flask import jsonify
 from datetime import datetime
+import logging
 
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s: %(message)s')
+logger = logging.getLogger(__name__)
 
 CRAG_DATA_PATH = 'crag_cast/db/crag_df.csv'
 WEATHER_DATA_PATH = 'crag_cast/db/cleaned_weather_df.csv'
@@ -195,6 +198,7 @@ def crag_detail(crag_id):
 @cache.memoize()
 def get_weather(lat,lon):
     try:
+        logger.info(f"Fetching weather for lat={lat}, lon-{lon}")
         url = (
             f"https://api.open-meteo.com/v1/forecast?"
             f"latitude={lat}&longitude={lon}"
@@ -203,23 +207,28 @@ def get_weather(lat,lon):
             f"&timezone=auto"
         )
         response = requests.get(url)
+        response.raise_for_status()
+
         data = response.json()
 
         hourly = data.get("hourly", {})
         now = datetime.utcnow().replace(minute=0, second=0, microsecond=0)
-
         hourly_times = [datetime.fromisoformat(t) for t in hourly.get ("time", [])]
-
         time_diffs = [abs((t - now).total_seconds()) for t in hourly_times]
         idx = time_diffs.index(min(time_diffs))
 
     
-        return jsonify({
+        result = ({
             "temperature": hourly.get("temperature_2m", [None])[idx],
             "humidity": hourly.get("relative_humidity_2m", [None])[idx],
             "precipitation": hourly.get("precipitation", [None])[idx],
             "windspeed": hourly.get("windspeed_10m", [None])[idx]
         })
+
+        logger.info(f"Weather data fetched successfully for {lat}, {lon}: {result}")
+        return jsonify(result)
+    
     except Exception as e:
+        logger.error(f"Error fetching weather for lat={lat}, lon={lon}: {e}")
         return jsonify({"error": str(e)}), 500
 

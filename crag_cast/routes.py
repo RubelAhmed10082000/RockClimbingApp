@@ -5,6 +5,7 @@ from urllib.parse import urlencode
 from crag_cast import app, cache
 import requests
 from flask import jsonify
+from datetime import datetime
 
 
 CRAG_DATA_PATH = 'crag_cast/db/crag_df.csv'
@@ -204,23 +205,20 @@ def get_weather(lat,lon):
         response = requests.get(url)
         data = response.json()
 
-        current = data.get("current_weather", {})
         hourly = data.get("hourly", {})
-        current_time = current.get("time")
+        now = datetime.utcnow().replace(minute=0, second=0, microsecond=0)
 
-        if current_time in hourly.get("time",[]):
-            idx = hourly['time'].index(current_time)
-            humidity = hourly.get("relative_humidity_2m", [None])[idx]
-            precipitation = hourly.get("precipitation", [None])[idx]
-        else:
-            humidity = None
-            precipitation = None
+        hourly_times = [datetime.fromisoformat(t) for t in hourly.get ("time", [])]
 
+        time_diffs = [abs((t - now).total_seconds()) for t in hourly_times]
+        idx = time_diffs.index(min(time_diffs))
+
+    
         return jsonify({
-            "temperature": current.get("temperature"),
-            "humidity": humidity,
-            "precipitation": precipitation,
-            "windspeed": current.get("windspeed")
+            "temperature": hourly.get("temperature_2m", [None])[idx],
+            "humidity": hourly.get("relative_humidity_2m", [None])[idx],
+            "precipitation": hourly.get("precipitation", [None])[idx],
+            "windspeed": hourly.get("windspeed_10m", [None])[idx]
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500

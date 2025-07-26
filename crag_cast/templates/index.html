@@ -354,25 +354,46 @@
             font-weight: 500;
         }
 
-        .badge-temp {
+        /*.badge-temp {
             background-color: #dbeafe;
             color: #1e40af;
-        }
+        } */
 
-        .badge-humidity {
+        /*.badge-humidity {
             background-color: #dcfce7;
             color: #166534;
+        } */
+
+        .badge-good {
+            background-color: #77DD77;
+            color: #666666;
         }
 
-        .badge-precip {
+        .badge-mild {
+            background-color: #FAC898;
+            color: #666666;
+        }
+
+        .badge-bad {
+            background-color: #FF6961;
+            color: #666666;
+        }
+
+        .badge-default {
+            background-color: #98d6fa;
+            color: #666666;
+        }
+
+
+        /* .badge-precip {
             background-color: #f3e8ff;
             color: #6b21a8;
-        }
+        } */
 
-        .badge-windspeed {
+        /* .badge-windspeed {
             background-color: #f3e8ff;
             color: #a8218b;
-        }
+        } */
 
         .crag-link {
             color: var(--text-primary);
@@ -656,7 +677,37 @@
 </div>
 
     <script>
-        // Function to fetch weather data for a specific coordinate
+        function getBadgeClass(metricName, value){
+            if (value === null || value === undefined) return 'badge-default';
+
+            switch (metricName) {
+                case 'temperature':
+                    if (value < 10) return 'badge-bad';
+                    else if (value >= 10 && value <= 15) return 'badge-mild';
+                    else if (value > 15 && value <= 25) return 'badge-good';
+                    else if (value > 25 && value <= 30) return 'badge-mild';
+                    else if (value > 30) return 'badge-bad';
+                    else return 'badge-bad';
+
+                case 'humidity':
+                    if (value > 70) return 'badge-bad';
+                    else if (value <= 70 && value > 50) return 'badge-mild';
+                    else if (value < 50) return 'badge-good';
+
+                case 'precipitation':
+                    if (value === 0 ) return 'badge-good';
+                    else return 'badge-bad';
+
+                case 'windspeed':
+                    if (value <= 20) return 'badge-good';
+                    else if (value > 20 && value < 30) return 'badge-mild';
+                    else return 'badge-bad'
+                
+                default: 
+                    return 'badge-default'
+            }
+        }
+
         async function fetchWeather(lat, lon, row) {
             const weatherCell = row.querySelector('.weather-data');
             try {
@@ -664,28 +715,33 @@
                 const weather = await response.json();
                 if (weather.error) throw Error(weather.error);
                 
+                const tClass = getBadgeClass('temperature', weather.temperature);
+                const hClass = getBadgeClass('humidity', weather.humidity);
+                const pClass = getBadgeClass('precipitation', weather.precipitation);
+                const wClass = getBadgeClass('windspeed', weather.windspeed);
+
 
 
                 weatherCell.innerHTML = `
 
                         <div class="weather-metric">
                             <div class="metric-label">Temperature(C)</div>
-                            <span class="badge badge-temp">${weather.temperature ?? 'N/A'}°C</span>
+                            <span class="badge ${tClass}">${weather.temperature ?? 'N/A'}°C</span>
                         </div>
 
                         <div class="weather-metric">
                             <div class="metric-label">Humidity(%)</div>
-                            <span class="badge badge-humidity">${weather.humidity ?? 'N/A'}%</span>
+                            <span class="badge ${hClass}">${weather.humidity ?? 'N/A'}%</span>
                         </div>
 
                         <div class="weather-metric">
                             <div class="metric-label">Precipitation(mm)</div>
-                            <span class="badge badge-precip">${weather.precipitation ?? 'N/A'} mm</span>
+                            <span class="badge ${pClass}">${weather.precipitation ?? 'N/A'} mm</span>
                         </div>
 
                         <div class="weather-metric">
                             <div class="metric-label">Windspeed(Km/h)</div>
-                            <span class="badge badge-windspeed">${weather.windspeed ?? 'N/A'} Km/h</span>
+                            <span class="badge ${wClass}">${weather.windspeed ?? 'N/A'} Km/h</span>
                         </div>
                     </div>
                 `;

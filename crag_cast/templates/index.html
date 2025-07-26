@@ -341,6 +341,11 @@
             color: #6b21a8;
         }
 
+        .badge-windspeed {
+            background-color: #f3e8ff;
+            color: #a8218b;
+        }
+
         .crag-link {
             color: var(--text-primary);
             text-decoration: none;
@@ -631,7 +636,7 @@
                         <span class="badge badge-temp">${weather.temperature ?? 'N/A'}°C</span>
                         <span class="badge badge-humidity">${weather.humidity ?? 'N/A'}%</span>
                         <span class="badge badge-precip">${weather.precipitation ?? 'N/A'}mm</span>
-                        <span class="badge badge-wind">${weather.windspeed ?? 'N/A'} km/h</span>
+                        <span class="badge badge-windspeed">${weather.windspeed ?? 'N/A'} km/h</span>
                     </div>
                 `;
             } catch (error) {

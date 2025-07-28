@@ -600,6 +600,7 @@
                             </div>
                         </th>
                         <th>Weather</th>
+                        <th>Last Rained</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -629,7 +630,7 @@
                                     </div>
                                     <div class="weather-metric">
                                         <div class="metric-label">Humidity(%)</div>
-                                        <span class="badge badge-humidity">{{ crag.weather.humidty }}</span>
+                                        <span class="badge badge-humidity">{{ crag.weather.humidity }}</span>
                                     </div>
                                     <div class="weather-metric">
                                         <div class="metric-label">Precipitation(mm)</div>
@@ -643,6 +644,13 @@
                                     <span class="weather-loading">Loading weather data...</span>
                                 {% endif %}
                             </div>
+                        </td>
+                        <td>
+                            {% if crag.weather and crag.weather.last_rained %}
+                                {{ crag.weather.last_rained | pretty_date }}
+                            {% else %}
+                                <span class="text-secondary">N/A</span>
+                            {% endif %}
                         </td>
                     </tr>
                 {% endfor %}

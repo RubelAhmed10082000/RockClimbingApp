@@ -5,7 +5,7 @@ from urllib.parse import urlencode
 from crag_cast import app, cache
 import requests
 from flask import jsonify
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 import logging
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s: %(message)s')
@@ -77,7 +77,8 @@ def index():
             weather = {
                 'temperature': weather_data['temperature'],
                 'humidity': weather_data['humidity'],
-                'precipitation': weather_data['precipitation']
+                'precipitation': weather_data['precipitation'],
+                "last_rained": get_last_rained(row['latitude'], row['longitude'])
             }
         else:
             weather = None
@@ -232,3 +233,75 @@ def get_weather(lat,lon):
         logger.error(f"Error fetching weather for lat={lat}, lon={lon}: {e}")
         return jsonify({"error": str(e)}), 500
 
+
+"""@cache.memoize(timeout=1800)
+def get_last_rained(lat,lon):
+    end_date = datetime.utcnow().date()
+    start_date = end_date - timedelta(days=5)
+
+    response = requests.get(
+        "https://archive-api.open-meteo.com/v1/archive",
+        params = {
+            "latitude": lat,
+            "longitude": lon,
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat(),
+            "hourly": "precipitation",
+            "timezone": "auto"
+        }
+    )
+
+    data = response.json()
+    times = data.get("hourly", {}).get("time",[])
+    precipitation = data.get("hourly", {}).get("precipitation",[])
+
+    if not times or not precipitation:
+        logger.warning(f"No historical precipitation data for lat={lat}, lon={lon}")
+        return None
+
+
+    for time, value in reversed(list(zip(times, precipitation))):
+        if value > 0:
+            logger.info(f"Last rained at {time} for lat={lat}, lon={lon}")
+            return time
+    
+    logger.info(f"No rain found in the past 5 days for lat={lat}, lon={lon}")
+    return None
+
+@app.template_filter('pretty_date')
+def pretty_date(value):
+    try:
+        for fmt in ('%Y-%m-%dT%H:%M:%S', '%Y-%m-%dT%H:%M'):
+            try:
+                dt = datetime.strptime(value, fmt)
+                break
+            except ValueError:
+                continue
+        else:
+            return value
+            
+        now = datetime.now()
+        delta = now - dt
+        
+        seconds = delta.total_seconds()
+        minutes = seconds // 60
+        hours = minutes // 60
+        days = delta.days
+
+        if seconds < 60:
+            return "just now"
+        elif minutes < 60:
+            return f"{int(minutes)} minutes ago"
+        elif hours < 24:
+            return f"{int(hours)} hours ago"
+        elif days == 1:
+            return "1 day ago"
+        elif days <= 5:
+            return f"{days} days ago"
+        elif days > 5:
+            return "more than 5 days ago"
+        else:
+            return dt.strftime("%d %b %Y")
+    
+    except Exception:
+        return value"""

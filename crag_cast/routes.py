@@ -77,8 +77,7 @@ def index():
             weather = {
                 'temperature': weather_data['temperature'],
                 'humidity': weather_data['humidity'],
-                'precipitation': weather_data['precipitation'],
-                "last_rained": get_last_rained(row['latitude'], row['longitude'])
+                'precipitation': weather_data['precipitation']
             }
         else:
             weather = None

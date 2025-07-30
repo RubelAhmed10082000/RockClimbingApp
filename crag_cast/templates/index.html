@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title></title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
     <style>
         :root {
             --primary-color: #2563eb;
@@ -536,7 +537,6 @@
                 <div class="filter-group">
                         <label for="type">Climbing style:</label>
                         <select name="type" id="type" multiple>
-                            <option value="">All climbing styles</option>
                             {% for type_option in type %}
                             <option value="{{ type_option }}" {% if type_option in selected_type %}selected{% endif %}>
                                 {{ type_option }}
@@ -842,6 +842,20 @@
                 document.getElementById('searchForm').submit();
             });
         });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const typeSelect = document.getElementById('type');
+            if (typeSelect) {
+                new Choices(typeSelect, {
+                    removeItemButton:true,
+                    placeholderValue: 'Select climbing styles',
+                    searchPlaceholderValue: 'Search...',
+                    shouldSort: false
+                });
+            }
+        });
+        
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
 </body>
 </html>

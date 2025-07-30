@@ -20,6 +20,27 @@
             --danger-color: #ef4444;
         }
 
+        .choices__list--multiple .choices__item {
+            display: none;
+        }
+        
+        .choices {
+            width: 300px;
+            border-radius: 8px; 
+        }
+
+        .choices__list--dropdow {
+            min-width: 300px;
+            white-space: nowrap;
+            border-radius: 8px; 
+            overflow: hidden;
+        }
+        
+        .choices__item--choice {
+            border-radius: 4px;
+            margin: 2px 0;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -850,11 +871,15 @@
                     removeItemButton:true,
                     placeholderValue: 'Select climbing styles',
                     searchPlaceholderValue: 'Search...',
-                    shouldSort: false
+                    shouldSort: false,
+                    renderSelectedChoices: 'always',
+                    classNames: {
+                        selectedState: 'hide-selected'
+                    }
                 });
             }
         });
-        
+
     </script>
     <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
 </body>

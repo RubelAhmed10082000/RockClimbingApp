@@ -584,7 +584,7 @@
                     </span>
                     {% endfor %}
                 </div>
-                {% if search_query or selected_country or selected_rocktype or selected_county %}
+                {% if search_query or selected_country or selected_rocktype or selected_county or selected_type %}
                 {% endif %}
             </div>
         </div>
@@ -676,7 +676,7 @@
         </table>
     </div>
 
-    {% macro filter_query_string() -%}
+    ""{% macro filter_query_string() -%}
     {% for c in selected_country %}&country={{ c }}{% endfor %}
     {% for r in selected_rocktype %}&rocktype={{ r }}{% endfor %}
     {% for y in selected_county %}&county={{ y }}{% endfor %}

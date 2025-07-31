@@ -521,7 +521,6 @@
                     <div class="filter-group">
                         <label for="country">Country:</label>
                         <select name="country" id="country" multiple>
-                            <option value="">All Countries</option>
                             {% for country_option in countries %}
                             <option value="{{ country_option }}" {% if country in selected_country %}selected{% endif %}>
                                 {{ country_option }}
@@ -533,7 +532,6 @@
                     <div class="filter-group">
                         <label for="rocktype">Rock Type:</label>
                         <select name="rocktype" id="rocktype" multiple>
-                            <option value="">All Rock Types</option>
                             {% for rock_type in rock_types %}
                             <option value="{{ rock_type }}" {% if rock_type in selected_rocktypes %}selected{% endif %}>
                                 {{ rock_type }}
@@ -546,7 +544,6 @@
                     <div class="filter-group">
                         <label for="county">Region:</label>
                         <select name="county" id="county" multiple>
-                            <option value="">All Counties</option>
                             {% for county_option in counties %}
                             <option value="{{ county_option }}" {% if county_option in selected_county %}selected{% endif %}>
                                 {{ county_option }}
@@ -865,11 +862,12 @@
         });
 
         document.addEventListener('DOMContentLoaded', function () {
-            const typeSelect = document.getElementById('type');
-            if (typeSelect) {
-                new Choices(typeSelect, {
+            const form = document.getElementById('searchForm');
+            const selects = form.querySelectorAll('select');
+            selects.forEach(select =>  {
+                new Choices(select, {
                     removeItemButton:true,
-                    placeholderValue: 'Select climbing styles',
+                    placeholderValue:  select.getAttribute('placeholder') || 'Select options',
                     searchPlaceholderValue: 'Search...',
                     shouldSort: false,
                     renderSelectedChoices: 'always',
@@ -877,7 +875,11 @@
                         selectedState: 'hide-selected'
                     }
                 });
-            }
+
+                select.addEventListener('change', () => {
+                    form.submit();
+                })
+            });
         });
 
     </script>

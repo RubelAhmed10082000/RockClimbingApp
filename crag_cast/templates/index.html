@@ -539,7 +539,7 @@
                         <label for="rocktype">Rock Type:</label>
                         <select name="rocktype" id="rocktype" multiple>
                             {% for rock_type in rock_types %}
-                            <option value="{{ rock_type }}" {% if rock_type in selected_rocktypes %}selected{% endif %}>
+                            <option value="{{ rock_type }}" {% if rock_type in selected_rocktype %}selected{% endif %}>
                                 {{ rock_type }}
                             </option>
                             {% endfor %}

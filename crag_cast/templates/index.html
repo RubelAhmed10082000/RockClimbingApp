@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
     <style>
+
         :root {
             --primary-color: #2563eb;
             --primary-hover: #1d4ed8;
@@ -22,6 +23,11 @@
 
         .choices__list--multiple .choices__item {
             display: none;
+        }
+
+        .choices__checkbox {
+            margin-right: 8px;
+            pointer-events: none;
         }
         
         .choices {
@@ -862,26 +868,48 @@
         });
 
         document.addEventListener('DOMContentLoaded', function () {
-            const form = document.getElementById('searchForm');
-            const selects = form.querySelectorAll('select');
-            selects.forEach(select =>  {
-                new Choices(select, {
-                    removeItemButton:true,
-                    placeholderValue:  select.getAttribute('placeholder') || 'Select options',
-                    searchPlaceholderValue: 'Search...',
-                    shouldSort: false,
-                    renderSelectedChoices: 'always',
-                    classNames: {
-                        selectedState: 'hide-selected'
-                    }
-                });
+    const form = document.getElementById('searchForm');
+    const selects = form.querySelectorAll('select');
 
-                select.addEventListener('change', () => {
-                    form.submit();
-                })
-            });
+    selects.forEach(select => {
+        new Choices(select, {
+            removeItemButton: true,
+            shouldSort: false,
+            placeholderValue: select.getAttribute('placeholder') || 'Select options',
+            searchPlaceholderValue: 'Search...',
+            classNames: {
+                containerInner: 'choices__inner',
+                input: 'choices__input',
+                selectedState: 'choices__selected',
+                item: 'choices__item',
+                choice: 'choices__choice',
+                disabledState: 'choices__disabled',
+                highlightedState: 'choices__highlighted',
+                itemSelectable: 'choices__item--selectable',
+                button: 'choices__button',
+                group: 'choices__group',
+                placeholder: 'choices__placeholder'
+            },
+            callbackOnCreateTemplates: function (template) {
+                return {
+                    choice: (classNames, data) => {
+                        return template(`
+                            <div class="${classNames.item} ${classNames.itemChoice} ${data.disabled ? classNames.itemDisabled : ''}" data-select-text="" data-choice ${data.disabled ? 'data-choice-disabled aria-disabled="true"' : 'data-choice-selectable'} data-id="${data.id}" data-value="${data.value}" ${data.groupId > 0 ? 'role="treeitem"' : 'role="option"'}>
+                                <input type="checkbox" class="choices__checkbox" ${data.selected ? 'checked' : ''} tabindex="-1" />
+                                <span>${data.label}</span>
+                            </div>
+                        `);
+                    }
+                };
+            }
         });
 
+        // Optional: auto-submit the form when filters change
+        select.addEventListener('change', () => {
+            form.submit();
+        });
+    });
+});
     </script>
     <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
 </body>

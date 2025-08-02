@@ -213,7 +213,7 @@
             gap: 1rem;
         }
 
-        .route-type, .route-difficulty {
+        .route-type, .route-difficulty, .route-safety {
             font-size: 0.875rem;
             color: var(--text-secondary);
             background-color: var(--bg-color);
@@ -374,14 +374,16 @@
                         <li class="route-item">
                             <div class="route-name">
                                 {{ route.name }}
-                                <span class="route-grade">{{ route.grade }}</span>
                             </div>
                             <div class="route-info">
                                 {% if route.type %}
-                                <span class="route-type">{{ route.type }}</span>
+                                <span class="route-type">Climbing Style: {{ route.type }}</span>
+                                {% endif %}
+                                {% if route.safety and route.safety|lower != 'nan' %}
+                                <span class="route-safety">Safety Grade: {{ route.safety }}</span>
                                 {% endif %}
                                 {% if route.difficulty %}
-                                <span class="route-difficulty">{{ route.difficulty }}</span>
+                                <span class="route-difficulty">Difficulty Grade: {{ 'Not available' if route.difficulty|lower == 'nan' else route.difficulty  }}</span>
                                 {% endif %}
                             </div>
                             {% if route.description %}
@@ -476,6 +478,7 @@
                 filteredRoutes = routeItems.filter(item => {
                     const routeName = item.querySelector('.route-name').textContent.toLowerCase();
                     const routeType = item.querySelector('.route-type')?.textContent.toLowerCase() || '';
+                    const routeSafety = item.querySelector('.route-safety')?.textContent.toLowerCase() || '';
                     const routeGrade = item.querySelector('.route-grade').textContent.toLowerCase();
                     return routeName.includes(searchTerm) || 
                            routeType.includes(searchTerm) || 

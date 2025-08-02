@@ -154,8 +154,9 @@
 
         .filter-group {
             display: flex;
-            gap: 0.5rem;
-            align-items: center;
+            flex-direction: column; 
+            align-items: flex-start;
+            gap: 0.25rem;
             min-width: 200px;
             flex-grow: 1;
             margin-bottom: 1rem;
@@ -459,6 +460,19 @@
             margin-top: 0.25rem;
         }
 
+        .safety-group {
+            display: flex;
+            flex-direction: column; 
+            align-items: flex-start;
+            gap: 0.25rem;
+            min-width: 200px;
+            flex-grow: 1;
+            margin-bottom: 1rem;
+            flex-basis: calc(33.33% - 1rem);
+}
+
+        
+
         .route-count {
             display: inline-block;
             padding: 0.25rem 0.75rem;
@@ -567,6 +581,26 @@
                             </option>
                             {% endfor %}
                         </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="min_safety">Minimum Safety Grade (Trad Only):</label>
+                    <select name="min_safety" id="min_safety">
+                        {% for safety in safety_grades %}
+                        <option value="{{ safety }}" {% if grade == min_safety %}selected{% endif %}>{{ safety }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="max_safety">Maximum Safety Grade (Trad Only):</label>
+                    <select name="max_safety" id="max_safety">
+                        {% for safety in safety_grades %}
+                        <option value="{{ safety }}" {% if grade == max_safety %}selected{% endif %}>{{ safety }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
                 </div>
             </div>
             
@@ -700,13 +734,15 @@
         </table>
     </div>
 
-    ""{% macro filter_query_string() -%}
+{% macro filter_query_string() -%}
     {% for c in selected_country %}&country={{ c }}{% endfor %}
     {% for r in selected_rocktype %}&rocktype={{ r }}{% endfor %}
     {% for y in selected_county %}&county={{ y }}{% endfor %}
     {% for t in selected_type %}&type={{ t }}{% endfor %}
     {% if search_query %}&search={{ search_query }}{% endif %}
     &sort_by={{ sort_by }}&sort_order={{ sort_order }}&per_page={{ per_page }}
+    {% if min_grade %}&min_grade={{ min_grade }}{% endif %}
+    {% if max_grade %}&max_grade={{ max_grade }}{% endif %}
 {%- endmacro %}
 
 

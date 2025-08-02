@@ -19,6 +19,9 @@ weather_df = pd.read_csv(WEATHER_DATA_PATH)
 crag_df['latlon'] = crag_df[['latitude', 'longitude']].round(4).astype(str).agg('_'.join, axis=1)
 weather_df['latlon'] = weather_df[['latitude', 'longitude']].round(4).astype(str).agg('_'.join, axis=1)
 
+SAFETY_GRADES = ['M', 'D', 'VD', 'HVD', 'S', 'HS', 'VS', 'HVS'] + [f'E{i}' for i in range(1, 12)]
+
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     countries = sorted(crag_df['country'].dropna().unique())
@@ -26,6 +29,7 @@ def index():
     grade = sorted(crag_df['difficulty_grade'].dropna().unique())
     rocktypes = sorted(crag_df['rocktype'].dropna().unique())
     type = sorted(crag_df['type'].dropna().unique())
+    safety = sorted(crag_df['safety_grade'].dropna().unique())
 
     # Get filters from request.args for GET, or request.form for POST
     search_query = request.args.get('search', '')
@@ -35,7 +39,8 @@ def index():
     selected_type = request.args.getlist('type')
     sort_by = request.args.get('sort_by', 'crag_name')
     sort_order = request.args.get('sort_order', 'asc')
-   
+    selected_min_safety = request.args.get('min_safety')
+    selected_max_safety = request.args.get('max_safety')
     try:
         page, per_page, offset = get_page_args(page_parameter = 'page', per_page_parameter='per_page')
         if not per_page:
@@ -55,6 +60,13 @@ def index():
         filtered = filtered[filtered['county'].isin(selected_county)]
     if selected_type and '' not in selected_type:
         filtered = filtered[filtered['type'].isin(selected_type)]
+    if selected_min_safety in SAFETY_GRADES and selected_max_safety in SAFETY_GRADES:
+        min_idx = SAFETY_GRADES.index(selected_min_safety)
+        max_idx = SAFETY_GRADES.index(selected_max_safety)
+        if min_idx <= max_idx:
+            allowed_grades = SAFETY_GRADES[min_idx:max_idx + 1]
+            filtered = filtered[filtered['safety_grade'].isin(allowed_grades)]
+    
 
     # Sorting
     if sort_by in filtered.columns:
@@ -136,12 +148,15 @@ def index():
         selected_rocktype=selected_rocktype,
         selected_county=selected_county,
         selected_type=selected_type,
+        min_safety=selected_min_safety,
+        max_safety=selected_max_safety,
         sort_by=sort_by,
         sort_order=sort_order,
         per_page=per_page,
         pagination=pagination,
         current_page = page,
-        total_pages = (total_crags + per_page - 1) // per_page
+        total_pages = (total_crags + per_page - 1) // per_page,
+        safety_grades=SAFETY_GRADES,
     )
 
 @app.route('/results')
@@ -187,8 +202,9 @@ def crag_detail(crag_id):
     for _, row in crag_routes_df.iterrows():
         crag['crag_routes'].append({
             'name': row.get('route_name'),
-            'grade': row.get('difficulty_grade'),
+            'difficulty': row.get('difficulty_grade'),
             'type': row.get('type'),
+            'safety': row.get('safety_grade')
         })
 
     return render_template('crag_detail.html', crag=crag)
@@ -234,74 +250,3 @@ def get_weather(lat,lon):
         return jsonify({"error": str(e)}), 500
 
 
-"""@cache.memoize(timeout=1800)
-def get_last_rained(lat,lon):
-    end_date = datetime.utcnow().date()
-    start_date = end_date - timedelta(days=5)
-
-    response = requests.get(
-        "https://archive-api.open-meteo.com/v1/archive",
-        params = {
-            "latitude": lat,
-            "longitude": lon,
-            "start_date": start_date.isoformat(),
-            "end_date": end_date.isoformat(),
-            "hourly": "precipitation",
-            "timezone": "auto"
-        }
-    )
-
-    data = response.json()
-    times = data.get("hourly", {}).get("time",[])
-    precipitation = data.get("hourly", {}).get("precipitation",[])
-
-    if not times or not precipitation:
-        logger.warning(f"No historical precipitation data for lat={lat}, lon={lon}")
-        return None
-
-
-    for time, value in reversed(list(zip(times, precipitation))):
-        if value > 0:
-            logger.info(f"Last rained at {time} for lat={lat}, lon={lon}")
-            return time
-    
-    logger.info(f"No rain found in the past 5 days for lat={lat}, lon={lon}")
-    return None
-
-@app.template_filter('pretty_date')
-def pretty_date(value):
-    try:
-        for fmt in ('%Y-%m-%dT%H:%M:%S', '%Y-%m-%dT%H:%M'):
-            try:
-                dt = datetime.strptime(value, fmt)
-                break
-            except ValueError:
-                continue
-        else:
-            return value
-            
-        now = datetime.now()
-        delta = now - dt
-        
-        seconds = delta.total_seconds()
-        minutes = seconds // 60
-        hours = minutes // 60
-        days = delta.days
-
-        if seconds < 60:
-            return "just now"
-        elif minutes < 60:
-            return f"{int(minutes)} minutes ago"
-        elif hours < 24:
-            return f"{int(hours)} hours ago"
-        elif days == 1:
-            return "1 day ago"
-        elif days <= 5:
-            return f"{days} days ago"
-        elif days > 5:
-            return "more than 5 days ago"
-        else:
-            return dt.strftime("%d %b %Y")
-    
-    except Exception:
-        return value"""

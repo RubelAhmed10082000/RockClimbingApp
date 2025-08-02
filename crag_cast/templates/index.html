@@ -170,14 +170,13 @@
         }
 
         .filter-group select {
-            flex: 1;
-            padding: 0.75rem 1rem;
-            border: 2px solid var(--border-color);
-            border-radius: 0.5rem;
-            font-size: 1rem;
-            background-color: white;
-            cursor: pointer;
-            outline: none;
+            width: 100%;
+            padding: 8px;
+            font-size: 1em;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            appearance: none;
+            background-color: #fff;
         }
 
         .filter-group select[multiple] {
@@ -584,7 +583,7 @@
                 </div>
 
                 <div class="filter-group">
-                    <label for="min_safety">Min Safety:</label>
+                    <label for="min_safety">Minimum Safety Grade:</label>
                     <select name="min_safety" id="min_safety">
                         <option value="" {% if not min_safety %}selected{% endif %}></option>
                         {% for grade in safety_grades %}
@@ -595,7 +594,7 @@
 
 
                 <div class="filter-group">
-                    <label for="max_safety">Max Safety:</label>
+                    <label for="max_safety">Maximum Safety Grade:</label>
                     <select name="max_safety" id="max_safety">
                         <option value="" {% if not max_safety %}selected{% endif %}></option>
                         {% for grade in safety_grades %}
@@ -658,7 +657,7 @@
                     {% endif %}
                     
                 </div>
-                {% if search_query or selected_country or selected_rocktype or selected_county or selected_type %}
+                {% if search_query or selected_country or selected_rocktype or selected_county or selected_type or max_safety or min_safety %}
                 {% endif %}
             </div>
         </div>

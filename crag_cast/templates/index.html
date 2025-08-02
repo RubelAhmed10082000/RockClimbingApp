@@ -584,23 +584,24 @@
                 </div>
 
                 <div class="filter-group">
-                    <label for="min_safety">Minimum Safety Grade (Trad Only):</label>
+                    <label for="min_safety">Min Safety:</label>
                     <select name="min_safety" id="min_safety">
-                        {% for safety in safety_grades %}
-                        <option value="{{ safety }}" {% if grade == min_safety %}selected{% endif %}>{{ safety }}</option>
+                        <option value="" {% if not min_safety %}selected{% endif %}></option>
+                        {% for grade in safety_grades %}
+                            <option value="{{ grade }}" {% if min_safety == grade %}selected{% endif %}>{{ grade }}</option>
                         {% endfor %}
                     </select>
                 </div>
+
 
                 <div class="filter-group">
-                    <label for="max_safety">Maximum Safety Grade (Trad Only):</label>
+                    <label for="max_safety">Max Safety:</label>
                     <select name="max_safety" id="max_safety">
-                        {% for safety in safety_grades %}
-                        <option value="{{ safety }}" {% if grade == max_safety %}selected{% endif %}>{{ safety }}</option>
+                        <option value="" {% if not max_safety %}selected{% endif %}></option>
+                        {% for grade in safety_grades %}
+                            <option value="{{ grade }}" {% if max_safety == grade %}selected{% endif %}>{{ grade }}</option>
                         {% endfor %}
                     </select>
-                </div>
-
                 </div>
             </div>
             
@@ -641,6 +642,21 @@
                         <button type="button" onclick="clearFilter('type', '{{ t }}')">&times;</button>
                     </span>
                     {% endfor %}
+
+                    {% if min_safety %}
+                    <span class="filter-tag">
+                        Min Safety: {{ min_safety }}
+                        <button type="button" onclick="clearFilter('min_safety')">&times;</button>
+                    </span>
+                    {% endif %}
+
+                    {% if max_safety %}
+                    <span class="filter-tag">
+                        Max Safety: {{ max_safety }}
+                        <button type="button" onclick="clearFilter('max_safety')">&times;</button>
+                    </span>
+                    {% endif %}
+                    
                 </div>
                 {% if search_query or selected_country or selected_rocktype or selected_county or selected_type %}
                 {% endif %}

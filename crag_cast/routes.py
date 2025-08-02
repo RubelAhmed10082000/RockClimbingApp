@@ -19,7 +19,9 @@ weather_df = pd.read_csv(WEATHER_DATA_PATH)
 crag_df['latlon'] = crag_df[['latitude', 'longitude']].round(4).astype(str).agg('_'.join, axis=1)
 weather_df['latlon'] = weather_df[['latitude', 'longitude']].round(4).astype(str).agg('_'.join, axis=1)
 
-SAFETY_GRADES = ['M', 'D', 'VD', 'HVD', 'S', 'HS', 'VS', 'HVS'] + [f'E{i}' for i in range(1, 12)]
+SAFETY_GRADES = ['M', 'D', 'HD', 'VD', 'HVD', 'MS',
+                           'S', 'HS', 'MVS', 'VS', 'HVS'] + [f'E{i}' for i in range(1, 12)]
+GRADE_INDEX = {grade: i for i, grade in enumerate(SAFETY_GRADES)}
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -39,8 +41,8 @@ def index():
     selected_type = request.args.getlist('type')
     sort_by = request.args.get('sort_by', 'crag_name')
     sort_order = request.args.get('sort_order', 'asc')
-    selected_min_safety = request.args.get('min_safety')
-    selected_max_safety = request.args.get('max_safety')
+    min_safety = request.args.get('min_safety')
+    max_safety = request.args.get('max_safety')
     try:
         page, per_page, offset = get_page_args(page_parameter = 'page', per_page_parameter='per_page')
         if not per_page:
@@ -50,6 +52,9 @@ def index():
 
     # Filter crags
     filtered = crag_df.drop_duplicates(subset='crag_id').copy()
+    filtered = filtered[filtered['safety_grade'].isin(GRADE_INDEX.keys())]
+
+
     if search_query:
         filtered = filtered[filtered['crag_name'].str.contains(search_query, case=False, na=False)]
     if selected_country and '' not in selected_country:
@@ -60,13 +65,15 @@ def index():
         filtered = filtered[filtered['county'].isin(selected_county)]
     if selected_type and '' not in selected_type:
         filtered = filtered[filtered['type'].isin(selected_type)]
-    if selected_min_safety in SAFETY_GRADES and selected_max_safety in SAFETY_GRADES:
-        min_idx = SAFETY_GRADES.index(selected_min_safety)
-        max_idx = SAFETY_GRADES.index(selected_max_safety)
-        if min_idx <= max_idx:
-            allowed_grades = SAFETY_GRADES[min_idx:max_idx + 1]
-            filtered = filtered[filtered['safety_grade'].isin(allowed_grades)]
-    
+    if min_safety or max_safety :
+        filtered = filtered[filtered['safety_grade'].isin(SAFETY_GRADES)]
+
+        min_index = GRADE_INDEX.get(min_safety, 0)
+        max_index = GRADE_INDEX.get(max_safety, len(SAFETY_GRADES) - 1)
+
+        filtered = filtered[filtered['safety_grade'].apply(lambda g: GRADE_INDEX[g] >= min_index and GRADE_INDEX[g] <= max_index)]
+
+        
 
     # Sorting
     if sort_by in filtered.columns:
@@ -148,8 +155,8 @@ def index():
         selected_rocktype=selected_rocktype,
         selected_county=selected_county,
         selected_type=selected_type,
-        min_safety=selected_min_safety,
-        max_safety=selected_max_safety,
+        min_safety=min_safety,
+        max_safety=max_safety,
         sort_by=sort_by,
         sort_order=sort_order,
         per_page=per_page,

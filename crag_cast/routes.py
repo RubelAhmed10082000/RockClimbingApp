@@ -52,7 +52,6 @@ def index():
 
     # Filter crags
     filtered = crag_df.drop_duplicates(subset='crag_id').copy()
-    filtered = filtered[filtered['safety_grade'].isin(GRADE_INDEX.keys())]
 
 
     if search_query:
@@ -68,11 +67,17 @@ def index():
     if min_safety or max_safety :
         filtered = filtered[filtered['safety_grade'].isin(SAFETY_GRADES)]
 
-        min_index = GRADE_INDEX.get(min_safety, 0)
-        max_index = GRADE_INDEX.get(max_safety, len(SAFETY_GRADES) - 1)
+        if min_safety and min_safety in GRADE_INDEX:
+            min_index = GRADE_INDEX[min_safety]
+            filtered = filtered[filtered['safety_grade'].apply(
+                lambda g: GRADE_INDEX.get(g, -1) >= min_index
+            )]
 
-        filtered = filtered[filtered['safety_grade'].apply(lambda g: GRADE_INDEX[g] >= min_index and GRADE_INDEX[g] <= max_index)]
-
+        if max_safety and max_safety in GRADE_INDEX:
+            max_index = GRADE_INDEX[max_safety]
+            filtered = filtered[filtered['safety_grade'].apply(
+                lambda g: GRADE_INDEX.get(g, float('inf')) <= max_index
+            )]
         
 
     # Sorting

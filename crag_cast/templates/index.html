@@ -694,18 +694,6 @@
         </table>
     </div>
 
-{% macro filter_query_string() -%}
-    {% for c in selected_country %}&country={{ c }}{% endfor %}
-    {% for r in selected_rocktype %}&rocktype={{ r }}{% endfor %}
-    {% for y in selected_county %}&county={{ y }}{% endfor %}
-    {% for t in selected_type %}&type={{ t }}{% endfor %}
-    {% if search_query %}&search={{ search_query }}{% endif %}
-    &sort_by={{ sort_by }}&sort_order={{ sort_order }}&per_page={{ per_page }}
-    {% if min_grade %}&min_grade={{ min_grade }}{% endif %}
-    {% if max_grade %}&max_grade={{ max_grade }}{% endif %}
-{%- endmacro %}
-
-
 <div class="pagination">
     {{ pagination.links }}
 </div>
@@ -714,8 +702,8 @@
     <span class="current">Page {{ current_page }} of {{ total_pages }}</span>
 
     {% if current_page < total_pages %}
-        <a href="?page={{ current_page + 1 }}{{ filter_query_string() }}">Next</a>
-        <a href="?page={{ total_pages }}{{ filter_query_string() }}">Last &raquo;</a>
+        <a href="?page={{ current_page + 1 }}">Next</a>
+        <a href="?page={{ total_pages }}">Last &raquo;</a>
     {% else %}
         <span class="disabled">Next</span>
         <span class="disabled">Last &raquo;</span>

@@ -19,10 +19,6 @@ weather_df = pd.read_csv(WEATHER_DATA_PATH)
 crag_df['latlon'] = crag_df[['latitude', 'longitude']].round(4).astype(str).agg('_'.join, axis=1)
 weather_df['latlon'] = weather_df[['latitude', 'longitude']].round(4).astype(str).agg('_'.join, axis=1)
 
-SAFETY_GRADES = ['M', 'D', 'HD', 'VD', 'HVD', 'MS',
-                           'S', 'HS', 'MVS', 'VS', 'HVS'] + [f'E{i}' for i in range(1, 12)]
-GRADE_INDEX = {grade: i for i, grade in enumerate(SAFETY_GRADES)}
-
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -149,28 +145,7 @@ def index():
         pagination=pagination,
         current_page = page,
         total_pages = (total_crags + per_page - 1) // per_page,
-        safety_grades=SAFETY_GRADES,
     )
-
-@app.route('/results')
-def paginated_results():
-    page = int(request.args.get('page', 1))
-    per_page = 10
-
-    filtered = crag_df.copy()
-    start = (page - 1) * per_page
-    end = start + per_page
-    page_crags = filtered.iloc[start:end].copy()
-
-    page_crags['latlon'] = page_crags[['latitude', 'longitude']].round(4).astype(str).agg('_'.join, axis=1)
-    weather_subset = weather_df.copy()
-    weather_subset['latlon'] = weather_subset[['latitude', 'longitude']].round(4).astype(str).agg('_'.join, axis=1)
-    merged = pd.merge(page_crags, weather_subset, on='latlon', how='left')
-
-    crags = merged.to_dict(orient='records')
-    total = len(filtered)
-
-    return render_template('results.html', crags=crags, page=page, per_page=per_page, total=total)
 
 @app.route('/crag/<int:crag_id>')
 def crag_detail(crag_id):

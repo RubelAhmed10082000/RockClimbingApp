@@ -401,16 +401,6 @@
             font-weight: 500;
         }
 
-        /*.badge-temp {
-            background-color: #dbeafe;
-            color: #1e40af;
-        } */
-
-        /*.badge-humidity {
-            background-color: #dcfce7;
-            color: #166534;
-        } */
-
         .badge-good {
             background-color: #77DD77;
             color: #666666;
@@ -431,16 +421,6 @@
             color: #666666;
         }
 
-
-        /* .badge-precip {
-            background-color: #f3e8ff;
-            color: #6b21a8;
-        } */
-
-        /* .badge-windspeed {
-            background-color: #f3e8ff;
-            color: #a8218b;
-        } */
 
         .crag-link {
             color: var(--text-primary);
@@ -581,27 +561,6 @@
                             {% endfor %}
                         </select>
                 </div>
-
-                <div class="filter-group">
-                    <label for="min_safety">Minimum Safety Grade:</label>
-                    <select name="min_safety" id="min_safety">
-                        <option value="" {% if not min_safety %}selected{% endif %}></option>
-                        {% for grade in safety_grades %}
-                            <option value="{{ grade }}" {% if min_safety == grade %}selected{% endif %}>{{ grade }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-
-                <div class="filter-group">
-                    <label for="max_safety">Maximum Safety Grade:</label>
-                    <select name="max_safety" id="max_safety">
-                        <option value="" {% if not max_safety %}selected{% endif %}></option>
-                        {% for grade in safety_grades %}
-                            <option value="{{ grade }}" {% if max_safety == grade %}selected{% endif %}>{{ grade }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
             </div>
             
 
@@ -641,23 +600,9 @@
                         <button type="button" onclick="clearFilter('type', '{{ t }}')">&times;</button>
                     </span>
                     {% endfor %}
-
-                    {% if min_safety %}
-                    <span class="filter-tag">
-                        Min Safety: {{ min_safety }}
-                        <button type="button" onclick="clearFilter('min_safety')">&times;</button>
-                    </span>
-                    {% endif %}
-
-                    {% if max_safety %}
-                    <span class="filter-tag">
-                        Max Safety: {{ max_safety }}
-                        <button type="button" onclick="clearFilter('max_safety')">&times;</button>
-                    </span>
-                    {% endif %}
                     
                 </div>
-                {% if search_query or selected_country or selected_rocktype or selected_county or selected_type or max_safety or min_safety %}
+                {% if search_query or selected_country or selected_rocktype or selected_county or selected_type  %}
                 {% endif %}
             </div>
         </div>

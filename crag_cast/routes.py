@@ -41,8 +41,6 @@ def index():
     selected_type = request.args.getlist('type')
     sort_by = request.args.get('sort_by', 'crag_name')
     sort_order = request.args.get('sort_order', 'asc')
-    min_safety = request.args.get('min_safety')
-    max_safety = request.args.get('max_safety')
     try:
         page, per_page, offset = get_page_args(page_parameter = 'page', per_page_parameter='per_page')
         if not per_page:
@@ -64,21 +62,6 @@ def index():
         filtered = filtered[filtered['county'].isin(selected_county)]
     if selected_type and '' not in selected_type:
         filtered = filtered[filtered['type'].isin(selected_type)]
-    if min_safety or max_safety :
-        filtered = filtered[filtered['safety_grade'].isin(SAFETY_GRADES)]
-
-        if min_safety and min_safety in GRADE_INDEX:
-            min_index = GRADE_INDEX[min_safety]
-            filtered = filtered[filtered['safety_grade'].apply(
-                lambda g: GRADE_INDEX.get(g, -1) >= min_index
-            )]
-
-        if max_safety and max_safety in GRADE_INDEX:
-            max_index = GRADE_INDEX[max_safety]
-            filtered = filtered[filtered['safety_grade'].apply(
-                lambda g: GRADE_INDEX.get(g, float('inf')) <= max_index
-            )]
-        
 
     # Sorting
     if sort_by in filtered.columns:
@@ -160,8 +143,6 @@ def index():
         selected_rocktype=selected_rocktype,
         selected_county=selected_county,
         selected_type=selected_type,
-        min_safety=min_safety,
-        max_safety=max_safety,
         sort_by=sort_by,
         sort_order=sort_order,
         per_page=per_page,

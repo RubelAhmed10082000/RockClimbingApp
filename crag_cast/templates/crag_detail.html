@@ -213,7 +213,7 @@
             gap: 1rem;
         }
 
-        .route-type, .route-difficulty, .route-safety {
+        .route-type, .route-difficulty, .route-safety{
             font-size: 0.875rem;
             color: var(--text-secondary);
             background-color: var(--bg-color);
@@ -478,7 +478,6 @@
                 filteredRoutes = routeItems.filter(item => {
                     const routeName = item.querySelector('.route-name').textContent.toLowerCase();
                     const routeType = item.querySelector('.route-type')?.textContent.toLowerCase() || '';
-                    const routeSafety = item.querySelector('.route-safety')?.textContent.toLowerCase() || '';
                     const routeGrade = item.querySelector('.route-grade').textContent.toLowerCase();
                     return routeName.includes(searchTerm) || 
                            routeType.includes(searchTerm) || 

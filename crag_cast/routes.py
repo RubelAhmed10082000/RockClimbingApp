@@ -104,6 +104,16 @@ def index():
         'per_page': per_page,
     }
 
+    for val in selected_country:
+        base_args.setdefault('country', []).append(val)
+    for val in selected_rocktype:
+        base_args.setdefault('rocktype', []).append(val)
+    for val in selected_county:
+        base_args.setdefault('county', []).append(val)
+    for val in selected_type:
+        base_args.setdefault('type', []).append(val)
+
+
     href_template = '/?' + urlencode(base_args, doseq=True) + '&page={0}'
 
     pagination = Pagination(
@@ -117,14 +127,6 @@ def index():
         href=href_template  
     )
 
-    for val in selected_country:
-        base_args.setdefault('country', []).append(val)
-    for val in selected_rocktype:
-        base_args.setdefault('rocktype', []).append(val)
-    for val in selected_county:
-        base_args.setdefault('county', []).append(val)
-    for val in selected_type:
-        base_args.setdefault('type', []).append(val)
 
 
     return render_template('index.html',

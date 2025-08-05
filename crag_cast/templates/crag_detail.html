@@ -405,18 +405,34 @@
                 </div>
                 {% endif %}
             </div>
-
-            <!-- Sidebar -->
             <div class="sidebar">
-                <!-- Weather Information -->
                 <div class="card">
                     <h2 class="card-title">Current Weather</h2>
-                    {% if weather %}
-                    <div>
-                        <span class="weather-badge weather-temp">{{ weather.temperature }}°C</span>
-                        <span class="weather-badge weather-humidity">{{ weather.humidity }}% Humidity</span>
-                        <span class="weather-badge weather-precip">{{ weather.precipitation }}mm Precipitation</span>
-                    </div>
+                    {% if forecast %}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Max Temp (°C)</th>
+                                <th>Min Temp (°C)</th>
+                                <th>Humidity (%)</th>
+                                <th>Precipitation (mm)</th>
+                                <th>Wind Speed (km/h)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for day in forecast %}
+                            <tr>
+                                <td>{{ day.date }}</td>
+                                <td>{{ day.temp_max }}</td>
+                                <td>{{ day.temp_min }}</td>
+                                <td>{{ day.humidity }}</td>
+                                <td>{{ day.precip }}</td>
+                                <td>{{ day.wind }}</td>
+                            </tr>
+                            {% endfor %}
+                        <t/body>
+                    </table>
                     {% else %}
                     <p>Weather information unavailable</p>
                     {% endif %}
@@ -531,26 +547,33 @@
             .addTo(map)
             .bindPopup('{{ crag.name }}');
 
-        // Update weather data periodically
-        async function updateWeather() {
-            try {
-                const response = await fetch(`/api/weather/{{ crag.latitude }}/{{ crag.longitude }}`);
-                if (response.ok) {
-                    const weather = await response.json();
-                    const weatherHtml = `
-                        <span class="weather-badge weather-temp">${weather.temperature}°C</span>
-                        <span class="weather-badge weather-humidity">${weather.humidity}% Humidity</span>
-                        <span class="weather-badge weather-precip">${weather.precipitation}mm Precipitation</span>
-                    `;
-                    document.querySelector('.card:first-child div').innerHTML = weatherHtml;
-                }
-            } catch (error) {
-                console.error('Error updating weather:', error);
-            }
-        }
-
-        // Update weather every 5 minutes
-        setInterval(updateWeather, 300000);
     </script>
+    
+    <script>
+    async function loadForecast() {
+        const response = await fetch(`/api/weather/{{ crag.crag_latitude }}/{{ crag.crag_longitude }}`);
+        const data = await response.json();
+
+        const container = document.getElementById('forecast-container');
+        container.innerHTML = '';
+
+        data.slice(0, 24 * 7).forEach(entry => {
+            const div = document.createElement('div');
+            div.className = 'hour-forecast';
+            div.innerHTML = `
+                <strong>${entry.time}</strong>:
+                ${entry.temperature}°C,
+                ${entry.humidity}% humidity,
+                ${entry.precipitation} mm,
+                ${entry.windspeed} km/h wind
+            `;
+            container.appendChild(div);
+        });
+}
+loadForecast();
+</script>
+<div id="forecast-container"></div>
+
+
 </body>
 </html> 

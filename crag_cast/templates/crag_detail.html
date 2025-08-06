@@ -40,13 +40,11 @@
             line-height: 1.5;
         }
 
-        /* Layout */
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 2rem;
         }
-
         .crag-grid {
             display: grid;
             grid-template-columns: 2fr 1fr;
@@ -93,11 +91,13 @@
 
         /* Cards */
         .card {
-            background: var(--card-bg);
-            border-radius: 1rem;
-            padding: 1.5rem;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        background-color: #fff;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
 
         .card-title {
             font-size: 1.25rem;
@@ -408,34 +408,7 @@
             <div class="sidebar">
                 <div class="card">
                     <h2 class="card-title">Current Weather</h2>
-                    {% if forecast %}
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Max Temp (°C)</th>
-                                <th>Min Temp (°C)</th>
-                                <th>Humidity (%)</th>
-                                <th>Precipitation (mm)</th>
-                                <th>Wind Speed (km/h)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for day in forecast %}
-                            <tr>
-                                <td>{{ day.date }}</td>
-                                <td>{{ day.temp_max }}</td>
-                                <td>{{ day.temp_min }}</td>
-                                <td>{{ day.humidity }}</td>
-                                <td>{{ day.precip }}</td>
-                                <td>{{ day.wind }}</td>
-                            </tr>
-                            {% endfor %}
-                        <t/body>
-                    </table>
-                    {% else %}
-                    <p>Weather information unavailable</p>
-                    {% endif %}
+                    <div id="weatherForecast" style="overflow-x: scroll;"></div>
                 </div>
 
                 <!-- Access Information -->
@@ -550,30 +523,64 @@
     </script>
     
     <script>
-    async function loadForecast() {
-        const response = await fetch(`/api/weather/{{ crag.crag_latitude }}/{{ crag.crag_longitude }}`);
-        const data = await response.json();
+    async function loadWeather() {
+        try {
+            const response = await fetch(`/api/forecast/{{ crag.crag_latitude }}/{{ crag.crag_longitude }}`);
+            const data = await response.json();
+            if (!data.forecast) throw new Error("No forecast data");
 
-        const container = document.getElementById('forecast-container');
-        container.innerHTML = '';
+            const container = document.getElementById("weatherForecast");
 
-        data.slice(0, 24 * 7).forEach(entry => {
-            const div = document.createElement('div');
-            div.className = 'hour-forecast';
-            div.innerHTML = `
-                <strong>${entry.time}</strong>:
-                ${entry.temperature}°C,
-                ${entry.humidity}% humidity,
-                ${entry.precipitation} mm,
-                ${entry.windspeed} km/h wind
+            const scrollContainer = document.createElement('div');
+            scrollContainer.style.overflowX = 'scroll';
+            scrollContainer.style.maxWidth = '100%';
+            scrollContainer.style.display = 'block';
+            scrollContainer.style.marginTop = '1rem';
+
+            const table = document.createElement('table');
+            table.style.width = 'max-content';
+            table.style.borderCollapse = 'collapse';
+            table.style.tableLayout = 'auto';
+            table.style.fontSize = '0.875rem';
+
+            const timestamps = data.forecast.map(entry => entry.time);
+
+            const buildRow = (label, values, unit = '') => {
+                return `<tr>
+                    <td style="padding: 0.5rem; font-weight: 600; white-space: nowrap;">${label}</td>
+                    ${values.map(v => `<td style="padding: 0.5rem; white-space: nowrap;">${v}${unit}</td>`).join('')}
+                </tr>`;
+            };
+
+            table.innerHTML = `
+                <thead>
+                    <tr>
+                        <th style="text-align:left; padding: 0.5rem;">Metric</th>
+                        ${timestamps.map(t => `<th style="padding: 0.5rem; white-space: nowrap;">${t}</th>`).join('')}
+                    </tr>
+                </thead>
+                <tbody>
+                    ${buildRow('Temperature (℃)', data.forecast.map(e => e.temperature))}
+                    ${buildRow('Humidity (%)', data.forecast.map(e => e.humidity))}
+                    ${buildRow('Precipitation (mm)', data.forecast.map(e => e.precipitation))}
+                    ${buildRow('Windspeed (km/h)', data.forecast.map(e => e.windspeed))}
+                </tbody>
             `;
-            container.appendChild(div);
-        });
-}
-loadForecast();
+
+            scrollContainer.appendChild(table);
+            container.innerHTML = ''; // Clear existing content
+            container.appendChild(scrollContainer);
+        } catch (error) {
+            console.error("Error loading weather data:", error);
+            const container = document.getElementById("weatherForecast");
+            container.innerText = "Unable to load forecast data.";
+        }
+    }
+
+    loadWeather();
 </script>
-<div id="forecast-container"></div>
 
+        </script>
 
-</body>
-</html> 
+        </body>
+        </html> 

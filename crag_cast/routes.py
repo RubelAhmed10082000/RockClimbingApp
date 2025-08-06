@@ -267,4 +267,12 @@ def get_weather(lat,lon):
         logger.error(f"Error fetching weather for lat={lat}, lon={lon}: {e}")
         return jsonify({"error": str(e)}), 500
 
-
+@app.route('/api/forecast/<lat>/<lon>')
+@cache.memoize()
+def get_forecast(lat, lon):
+    try:
+        forecast = get_7_day_weather(lat, lon)
+        return jsonify({"forecast": forecast})
+    except Exception as e:
+        logger.error(f"Forecast error: {e}")
+        return jsonify({"error": str(e)}), 500

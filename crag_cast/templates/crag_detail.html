@@ -304,6 +304,15 @@
             font-size: 0.875rem;
             color: var(--text-secondary);
         }
+
+        .sidebar {
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        background-color: #fff;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
     </style>
 </head>
 <body>
@@ -405,11 +414,11 @@
                 </div>
                 {% endif %}
             </div>
-            <div class="sidebar">
-                <div class="card">
-                    <h2 class="card-title">Current Weather</h2>
-                    <div id="weatherForecast" style="overflow-x: scroll;"></div>
-                </div>
+        <div class="sidebar">
+                <h2 class="card-title">Current Weather</h2>
+                <div id="weatherForecast" 
+                style= "width: 233.33px; height: 142px; overflow: auto; display: block;"></div>
+            </div>
 
                 <!-- Access Information -->
                 {% if crag.access %}
@@ -533,9 +542,13 @@
 
             const scrollContainer = document.createElement('div');
             scrollContainer.style.overflowX = 'scroll';
-            scrollContainer.style.maxWidth = '100%';
+            scrollContainer.style.width = 'max-content';
+            scrollContainer.style.height = 'max-content';
             scrollContainer.style.display = 'block';
             scrollContainer.style.marginTop = '1rem';
+            table.style.tableLayout = 'auto';
+            table.style.width = 'max-content'; 
+            table.style.borderCollapse = 'collapse';
 
             const table = document.createElement('table');
             table.style.width = 'max-content';

@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>CragCast</h1>
+            <p>Find the best crag based on the weather</p>
+        </div>
+
+        <div class="search-section">
+            <form class="search-form" method="get" action="/" id="searchForm">
+                <div class="search-row">
+                    <div class="search-input">
+                        <input 
+                            type="text" 
+                            name="search" 
+                            value="{{ search_query }}" 
+                            placeholder="Search for crags by name..."
+                            aria-label="Search crags"
+                        >
+                    </div>
+                    <button type="submit">Search</button>
+                </div>
+
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label for="country">Country:</label>
+                        <select name="country" id="country" multiple>
+                            {% for country_option in countries %}
+                            <option value="{{ country_option }}" {% if country in selected_country %}selected{% endif %}>
+                                {{ country_option }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="rocktype">Rock Type:</label>
+                        <select name="rocktype" id="rocktype" multiple>
+                            {% for rock_type in rock_types %}
+                            <option value="{{ rock_type }}" {% if rock_type in selected_rocktype %}selected{% endif %}>
+                                {{ rock_type }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                
+
+                    <div class="filter-group">
+                        <label for="county">Region:</label>
+                        <select name="county" id="county" multiple>
+                            {% for county_option in counties %}
+                            <option value="{{ county_option }}" {% if county_option in selected_county %}selected{% endif %}>
+                                {{ county_option }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                <div class="filter-group">
+                        <label for="type">Climbing style:</label>
+                        <select name="type" id="type" multiple>
+                            {% for type_option in type %}
+                            <option value="{{ type_option }}" {% if type_option in selected_type %}selected{% endif %}>
+                                {{ type_option }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                </div>
+            </div>
+            
+
+                <input type="hidden" name="sort_by" value="{{ sort_by }}" id="sortBy">
+                <input type="hidden" name="sort_order" value="{{ sort_order }}" id="sortOrder">
+                <input type="hidden" name="page" value="1">
+                <input type="hidden" name="per_page" value="{{ per_page }}">
+            </form>
+
+            <div class="summary">
+                Showing {{ crags|length }} of {{ total_crags }} crags 
+                <div class="active-filters">
+                    {% for c in selected_country %}
+                    <span class="filter-tag">
+                        Country: {{ c }}
+                        <button type="button" onclick="clearFilter('country', '{{ c }}')">&times;</button>
+                    </span>
+                    {% endfor %}
+
+                    {% for r in selected_rocktype %}
+                    <span class="filter-tag">
+                        Rock Type: {{ r }}
+                        <button type="button" onclick="clearFilter('rocktype', '{{ r }}')">&times;</button>
+                    </span>
+                    {% endfor %}
+
+                    {% for y in selected_county %}
+                    <span class="filter-tag">
+                        Region: {{ y }}
+                        <button type="button" onclick="clearFilter('county', '{{ y }}')">&times;</button>
+                    </span>
+                    {% endfor %}
+
+                    {% for t in selected_type %}
+                    <span class="filter-tag">
+                        Type: {{ t }}
+                        <button type="button" onclick="clearFilter('type', '{{ t }}')">&times;</button>
+                    </span>
+                    {% endfor %}
+                    
+                </div>
+                {% if search_query or selected_country or selected_rocktype or selected_county or selected_type  %}
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>
+                            <div class="sort-header {% if sort_by == 'name' %}active {% if sort_order == 'desc' %}desc{% endif %}{% endif %}" 
+                                 data-sort="name">
+                                Name
+                            </div>
+                        </th>
+                        <th>
+                            <div class="sort-header {% if sort_by == 'country' %}active {% if sort_order == 'desc' %}desc{% endif %}{% endif %}" 
+                                 data-sort="country">
+                                Location
+                            </div>
+                        </th>
+                        <th>
+                            <div class="sort-header {% if sort_by == 'rocktype' %}active {% if sort_order == 'desc' %}desc{% endif %}{% endif %}" 
+                                 data-sort="rocktype">
+                                Rock Type
+                            </div>
+                        </th>
+                        <th>
+                            <div class="sort-header {% if sort_by == 'routes' %}active {% if sort_order == 'desc' %}desc{% endif %}{% endif %}" 
+                                 data-sort="routes">
+                                Routes
+                            </div>
+                        </th>
+                        <th>Weather</th>
+                        <th>Last Rained</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for crag in crags %}
+                    <tr data-lat="{{ crag.latitude }}" data-lon="{{ crag.longitude }}">
+                        <td>
+                            <a href="/crag/{{ crag.id }}" class="crag-link">
+                                <strong>{{ crag.name }}</strong>
+                                <div class="view-details">{{ crag.crag_name }} →</div>
+                            </a>
+                        </td>
+                        <td>
+                            {{ crag.county }}, {{ crag.country }}<br>
+                            <span class="text-secondary">{{ crag.latitude }}, {{ crag.longitude }}</span>
+                        </td>
+                        <td>{{ crag.rocktype }}</td>
+                        <td>
+                            <span class="route-count">{{ crag.routes_count }} routes</span>
+                        </td>
+                        <td class="weather-data">
+                            <div class="weather-cell weather-block">
+                                <div class="weather-title">Weather</div>
+                                {% if crag.weather and crag.weather.temperature is not none %}
+                                    <div class="weather-metric">
+                                        <div class="metric-label">Temperature(C)</div>
+                                        <span class="badge badge-temp"> {{ crag.weather.temperature }}°C</span>
+                                    </div>
+                                    <div class="weather-metric">
+                                        <div class="metric-label">Humidity(%)</div>
+                                        <span class="badge badge-humidity">{{ crag.weather.humidity }}</span>
+                                    </div>
+                                    <div class="weather-metric">
+                                        <div class="metric-label">Precipitation(mm)</div>
+                                        <span class="badge badge-precip">{{ crag.weather.precipitation }}mm</span>
+                                    </div>
+                                    <div class="weather-metric">
+                                        <div class="metric-label">Windspeed(km/h)</div>
+                                        <span class="badge badge-windspeed">{{ crag.weather.windspeed }} km/h</span>
+                                    </div>
+                                {% else %}
+                                    <span class="weather-loading">Loading weather data...</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            {% if crag.weather and crag.weather.last_rained %}
+                                {{ crag.weather.last_rained | pretty_date }}
+                            {% else %}
+                                <span class="text-secondary">N/A</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+<div class="pagination">
+    {{ pagination.links }}
+</div>
+
+<div class="pagination">
+    <span class="current">Page {{ current_page }} of {{ total_pages }}</span>
+
+    {% if current_page < total_pages %}
+        <a href="?page={{ current_page + 1 }}">Next</a>
+        <a href="?page={{ total_pages }}">Last &raquo;</a>
+    {% else %}
+        <span class="disabled">Next</span>
+        <span class="disabled">Last &raquo;</span>
+    {% endif %}
+</div>
+
+    <script>
+        function getBadgeClass(metricName, value){
+            if (value === null || value === undefined) return 'badge-default';
+
+            switch (metricName) {
+                case 'temperature':
+                    if (value < 10) return 'badge-bad';
+                    else if (value >= 10 && value <= 15) return 'badge-mild';
+                    else if (value > 15 && value <= 25) return 'badge-good';
+                    else if (value > 25 && value <= 30) return 'badge-mild';
+                    else if (value > 30) return 'badge-bad';
+                    else return 'badge-bad';
+
+                case 'humidity':
+                    if (value > 70) return 'badge-bad';
+                    else if (value <= 70 && value > 50) return 'badge-mild';
+                    else if (value < 50) return 'badge-good';
+
+                case 'precipitation':
+                    if (value === 0 ) return 'badge-good';
+                    else return 'badge-bad';
+
+                case 'windspeed':
+                    if (value <= 20) return 'badge-good';
+                    else if (value > 20 && value < 30) return 'badge-mild';
+                    else return 'badge-bad'
+                
+                default: 
+                    return 'badge-default'
+            }
+        }
+
+        async function fetchWeather(lat, lon, row) {
+            const weatherCell = row.querySelector('.weather-data');
+            try {
+                const response = await fetch(`/api/weather/${lat}/${lon}`);
+                const weather = await response.json();
+                if (weather.error) throw Error(weather.error);
+                
+                const tClass = getBadgeClass('temperature', weather.temperature);
+                const hClass = getBadgeClass('humidity', weather.humidity);
+                const pClass = getBadgeClass('precipitation', weather.precipitation);
+                const wClass = getBadgeClass('windspeed', weather.windspeed);
+
+
+
+                weatherCell.innerHTML = `
+
+                        <div class="weather-metric">
+                            <div class="metric-label">Temperature(C)</div>
+                            <span class="badge ${tClass}">${weather.temperature ?? 'N/A'}°C</span>
+                        </div>
+
+                        <div class="weather-metric">
+                            <div class="metric-label">Humidity(%)</div>
+                            <span class="badge ${hClass}">${weather.humidity ?? 'N/A'}%</span>
+                        </div>
+
+                        <div class="weather-metric">
+                            <div class="metric-label">Precipitation(mm)</div>
+                            <span class="badge ${pClass}">${weather.precipitation ?? 'N/A'} mm</span>
+                        </div>
+
+                        <div class="weather-metric">
+                            <div class="metric-label">Windspeed(Km/h)</div>
+                            <span class="badge ${wClass}">${weather.windspeed ?? 'N/A'} Km/h</span>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error fetching weather:', error);
+                weatherCell.innerHTML = '<div class="weather-cell">Weather data unavailable</div>';
+            }
+        }
+
+        // Create an Intersection Observer
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const row = entry.target;
+                    const lat = row.dataset.lat;
+                    const lon = row.dataset.lon;
+                    if (row.querySelector('.weather-loading')) {
+                        fetchWeather(lat, lon, row);
+                    }
+                    observer.unobserve(row);
+                }
+            });
+        }, {
+            root: null,
+            rootMargin: '50px',
+            threshold: 0.1
+        });
+
+        // Observe all rows that need weather data
+        document.querySelectorAll('tr[data-lat][data-lon]').forEach(row => {
+            if (row.querySelector('.weather-loading')) {
+                observer.observe(row);
+            }
+        });
+
+
+        window.addEventListener('unload', () => observer.disconnect());
+
+
+        function clearFilter(filterName, filterValue = null) {
+            const form = document.getElementById('searchForm');
+            const selectElement = form.querySelector(`select[name="${filterName}"]`);
+            if (selectElement) {
+                const options = Array.from(selectElement.options);
+                options.forEach(option => {
+                    if (!filterValue || option.value == filterValue) {
+                        option.selected = false;
+                    }
+                })
+            }
+            form.submit();
+        }
+
+        document.querySelectorAll('.filter-group select').forEach(select => {
+            select.addEventListener('change', () => {
+                document.getElementById('searchForm').submit();
+            });
+        });
+
+        // Handle sorting
+        document.querySelectorAll('.sort-header').forEach(header => {
+            header.addEventListener('click', () => {
+                const sortBy = header.dataset.sort;
+                const currentSortBy = document.getElementById('sortBy').value;
+                const currentSortOrder = document.getElementById('sortOrder').value;
+                
+                // If clicking the same column, toggle the order
+                const newSortOrder = (sortBy === currentSortBy && currentSortOrder === 'asc') ? 'desc' : 'asc';
+                
+                document.getElementById('sortBy').value = sortBy;
+                document.getElementById('sortOrder').value = newSortOrder;
+                document.getElementById('searchForm').submit();
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('searchForm');
+    const selects = form.querySelectorAll('select');
+
+    selects.forEach(select => {
+        new Choices(select, {
+            removeItemButton: true,
+            shouldSort: false,
+            placeholderValue: select.getAttribute('placeholder') || 'Select options',
+            searchPlaceholderValue: 'Search...',
+            classNames: {
+                containerInner: 'choices__inner',
+                input: 'choices__input',
+                selectedState: 'choices__selected',
+                item: 'choices__item',
+                choice: 'choices__choice',
+                disabledState: 'choices__disabled',
+                highlightedState: 'choices__highlighted',
+                itemSelectable: 'choices__item--selectable',
+                button: 'choices__button',
+                group: 'choices__group',
+                placeholder: 'choices__placeholder'
+            },
+            callbackOnCreateTemplates: function (template) {
+                return {
+                    choice: (classNames, data) => {
+                        return template(`
+                            <div class="${classNames.item} ${classNames.itemChoice} ${data.disabled ? classNames.itemDisabled : ''}" data-select-text="" data-choice ${data.disabled ? 'data-choice-disabled aria-disabled="true"' : 'data-choice-selectable'} data-id="${data.id}" data-value="${data.value}" ${data.groupId > 0 ? 'role="treeitem"' : 'role="option"'}>
+                                <input type="checkbox" class="choices__checkbox" ${data.selected ? 'checked' : ''} tabindex="-1" />
+                                <span>${data.label}</span>
+                            </div>
+                        `);
+                    }
+                };
+            }
+        });
+
+        // Optional: auto-submit the form when filters change
+        select.addEventListener('change', () => {
+            form.submit();
+        });
+    });
+});
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+</body>
+</html>

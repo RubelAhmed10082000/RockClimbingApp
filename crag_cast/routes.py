@@ -2,7 +2,7 @@ import pandas as pd
 from flask import Flask, render_template, request
 from flask_paginate import Pagination, get_page_args
 from urllib.parse import urlencode
-from app import app, cache
+from crag_cast import app, cache
 import requests
 from flask import jsonify
 from datetime import datetime, timedelta, timezone
@@ -11,8 +11,8 @@ import logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s: %(message)s')
 logger = logging.getLogger(__name__)
 
-CRAG_DATA_PATH = 'app/db/crag_df.csv'
-WEATHER_DATA_PATH = 'app/db/cleaned_weather_df.csv'
+CRAG_DATA_PATH = 'crag_cast/db/crag_df.csv'
+WEATHER_DATA_PATH = 'crag_cast/db/cleaned_weather_df.csv'
 crag_df = pd.read_csv(CRAG_DATA_PATH)
 weather_df = pd.read_csv(WEATHER_DATA_PATH)
 

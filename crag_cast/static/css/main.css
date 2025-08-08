@@ -11,7 +11,6 @@ root {
             --danger-color: #ef4444;
         }
 
-        /* Reset & Base Styles */
         * {
             margin: 0;
             padding: 0;
@@ -25,7 +24,6 @@ root {
             line-height: 1.5;
         }
 
-        /* Layout */
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -45,7 +43,6 @@ root {
             }
         }
 
-        /* Navigation */
         .back-link {
             display: inline-flex;
             align-items: center;
@@ -60,7 +57,6 @@ root {
             color: var(--primary-hover);
         }
 
-        /* Header */
         .crag-header {
             margin-bottom: 2rem;
         }
@@ -91,7 +87,6 @@ root {
             color: var(--text-primary);
         }
 
-        /* Information Grid */
         .info-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -116,7 +111,6 @@ root {
             color: var(--text-primary);
         }
 
-        /* Map */
         .map-container {
             height: 400px;
             border-radius: 0.5rem;
@@ -124,7 +118,6 @@ root {
             margin-bottom: 1.5rem;
         }
 
-        /* Weather Badges */
         .weather-badge {
             display: inline-flex;
             align-items: center;
@@ -217,7 +210,6 @@ root {
             font-style: italic;
         }
 
-        /* Routes Controls */
         .routes-controls {
             display: flex;
             gap: 1rem;
@@ -256,7 +248,6 @@ root {
             border-color: var(--primary-color);
         }
 
-        /* Routes Pagination */
         .routes-pagination {
             display: flex;
             align-items: center;

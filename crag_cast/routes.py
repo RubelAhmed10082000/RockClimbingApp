@@ -29,7 +29,6 @@ def index():
     type = sorted(crag_df['type'].dropna().unique())
     safety = sorted(crag_df['safety_grade'].dropna().unique())
 
-    # Get filters from request.args for GET, or request.form for POST
     search_query = request.args.get('search', '')
     selected_country = request.args.getlist('country')
     selected_rocktype = request.args.getlist('rocktype')
@@ -44,7 +43,6 @@ def index():
     except Exception:
         page, per_page, offset = 1, 10, 0
 
-    # Filter crags
     filtered = crag_df.drop_duplicates(subset='crag_id').copy()
 
 
@@ -69,21 +67,11 @@ def index():
     end = start + per_page
     page_crags = filtered.iloc[start:end].copy()
 
-    # Dummy weather and routes_count for now
     crags = []
     for _, row in page_crags.iterrows():
         latlon_key = row['latlon']
         weather_row = weather_df[weather_df['latlon'] == latlon_key]
 
-        if not weather_row.empty:
-            weather_data = weather_row.iloc[0]
-            weather = {
-                'temperature': weather_data['temperature'],
-                'humidity': weather_data['humidity'],
-                'precipitation': weather_data['precipitation']
-            }
-        else:
-            weather = None
 
         crags.append({
             'id': row['crag_id'],
@@ -93,8 +81,7 @@ def index():
             'latitude': row['latitude'],
             'longitude': row['longitude'],
             'rocktype': row['rocktype'],
-            'routes_count': len(crag_df[crag_df['crag_id'] == row['crag_id']]),
-            'weather': weather  
+            'routes_count': len(crag_df[crag_df['crag_id'] == row['crag_id']])
         })
 
     base_args = {
@@ -175,7 +162,7 @@ def get_7_day_weather(lat,lon):
 
         hourly = data.get("hourly", {})
         timestamps = hourly.get("time", [])
-        temps = hourly.get("temperature_2m", [])
+        tempertature = hourly.get("temperature_2m", [])
         humidity = hourly.get("relative_humidity_2m", [])
         precip = hourly.get("precipitation", [])
         wind = hourly.get("windspeed_10m", [])
@@ -184,7 +171,7 @@ def get_7_day_weather(lat,lon):
         for i in range(len(timestamps)):
             forecast.append({
                 "time": timestamps[i],
-                "temperature": temps[i],
+                "temperature": tempertature[i],
                 "humidity": humidity[i],
                 "precipitation": precip[i],
                 "windspeed": wind[i]
